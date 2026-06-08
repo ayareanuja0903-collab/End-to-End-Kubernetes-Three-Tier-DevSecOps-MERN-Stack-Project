@@ -1,0 +1,28 @@
+replicaCount: 2
+
+image:
+  repository: <AWS_ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com/backend
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 5000
+
+mongodb:
+  host: mongodb-service
+  port: "27017"
+  database: mern
+
+secret:
+  mongoUri: mongodb://admin:password123@mongodb-service:27017/mern?authSource=admin
+  jwtSecret: myjwtsecret
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+  limits:
+    cpu: 500m
+    memory: 512Mi

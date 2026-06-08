@@ -1,0 +1,22 @@
+adminUser: admin
+
+adminPassword: admin123
+
+persistence:
+  enabled: true
+
+  size: 10Gi
+
+service:
+  type: LoadBalancer
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus-kube-prometheus-prometheus:9090
+        isDefault: true
