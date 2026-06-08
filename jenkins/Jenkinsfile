@@ -17,7 +17,8 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                url: 'https://github.com/your-org/project.git'
+                credentialsId: 'github-ssh-key',
+                url: 'git@github.com:ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git'
             }
         }
 
