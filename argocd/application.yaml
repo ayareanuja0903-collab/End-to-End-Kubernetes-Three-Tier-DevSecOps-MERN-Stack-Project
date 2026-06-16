@@ -8,7 +8,7 @@ spec:
  project: default
 
  source:
-   repoURL: https://github.com/your-org/project.git
+   repoURL: https://github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git
    targetRevision: main
    path: helm
 
