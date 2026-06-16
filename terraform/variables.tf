@@ -1,7 +1,19 @@
 variable "aws_region" {
-  default = "ap-south-1"
+  type = string
 }
 
 variable "cluster_name" {
-  default = "mern-eks-cluster"
+  type = string
+}
+
+variable "cluster_version" {
+  type = string
+}
+
+variable "vpc_cidr" {
+  type = string
+}
+
+variable "vpc_name" {
+  type = string
 }

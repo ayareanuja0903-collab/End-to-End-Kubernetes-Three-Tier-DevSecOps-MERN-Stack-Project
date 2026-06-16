@@ -1,18 +1,50 @@
 module "eks" {
- source = "terraform-aws-modules/eks/aws"
+  source  = "terraform-aws-modules/eks/aws"
+  version = "~> 20.0"
 
- cluster_name    = var.cluster_name
- cluster_version = "1.31"
+  cluster_name    = var.cluster_name
+  cluster_version = var.cluster_version
 
- subnet_ids = module.vpc.private_subnets
+  enable_irsa = true
 
- eks_managed_node_groups = {
-   workers = {
-     desired_size = 2
-     min_size     = 2
-     max_size     = 4
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnets
 
-     instance_types = ["t3.medium"]
-   }
- }
+  cluster_endpoint_public_access = true
+
+  cluster_addons = {
+    coredns = {
+      most_recent = true
+    }
+
+    kube-proxy = {
+      most_recent = true
+    }
+
+    vpc-cni = {
+      most_recent = true
+    }
+
+    aws-ebs-csi-driver = {
+      most_recent              = true
+      service_account_role_arn = aws_iam_role.ebs_csi_role.arn
+    }
+  }
+
+  eks_managed_node_groups = {
+    worker_nodes = {
+      min_size     = 2
+      max_size     = 3
+      desired_size = 2
+
+      instance_types = ["t3.medium"]
+
+      capacity_type = "ON_DEMAND"
+    }
+  }
+
+  tags = {
+    Environment = "dev"
+    Terraform   = "true"
+  }
 }

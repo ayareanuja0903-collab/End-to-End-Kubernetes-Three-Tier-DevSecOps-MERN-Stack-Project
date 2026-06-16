@@ -1,82 +1,36 @@
-# -----------------------------------
-# EKS Cluster Role
-# -----------------------------------
-resource "aws_iam_role" "eks_cluster_role" {
+data "aws_iam_policy_document" "ebs_assume_role" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
 
-  name = "eks-cluster-role"
+    principals {
+      type        = "Federated"
+      identifiers = [module.eks.oidc_provider_arn]
+    }
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(module.eks.oidc_provider, "https://", "")}:sub"
 
-    Statement = [{
-      Effect = "Allow"
+      values = [
+        "system:serviceaccount:kube-system:ebs-csi-controller-sa"
+      ]
+    }
 
-      Principal = {
-        Service = "eks.amazonaws.com"
-      }
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(module.eks.oidc_provider, "https://", "")}:aud"
 
-      Action = "sts:AssumeRole"
-    }]
-  })
-}
-# -----------------------------------
-# Attach EKS Policies
-# -----------------------------------
-
-resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
-
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-
-  role = aws_iam_role.eks_cluster_role.name
+      values = ["sts.amazonaws.com"]
+    }
+  }
 }
 
-resource "aws_iam_role_policy_attachment" "eks_vpc_policy" {
-
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
-
-  role = aws_iam_role.eks_cluster_role.name
+resource "aws_iam_role" "ebs_csi_role" {
+  name               = "AmazonEKS_EBS_CSI_DriverRole"
+  assume_role_policy = data.aws_iam_policy_document.ebs_assume_role.json
 }
 
-# -----------------------------------
-# Node Group IAM Role
-# -----------------------------------
-
-resource "aws_iam_role" "eks_node_role" {
-
-  name = "eks-node-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-
-    Statement = [{
-      Effect = "Allow"
-
-      Principal = {
-        Service = "ec2.amazonaws.com"
-      }
-
-      Action = "sts:AssumeRole"
-    }]
-  })
-}
-
-# -----------------------------------
-# Attach Node Policies
-# -----------------------------------
-resource "aws_iam_role_policy_attachment" "worker_node_policy" {
-
-  role       = aws_iam_role.eks_node_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-}
-
-resource "aws_iam_role_policy_attachment" "cni_policy" {
-
-  role       = aws_iam_role.eks_node_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-}
-
-resource "aws_iam_role_policy_attachment" "ecr_readonly" {
-
-  role       = aws_iam_role.eks_node_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+resource "aws_iam_role_policy_attachment" "ebs_csi_policy" {
+  role       = aws_iam_role.ebs_csi_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
