@@ -2,6 +2,4 @@
 
 test webhook trigger now
 
-Build #2 automatically starts
-
-Build #3 automatically starts
+Finally Build #3 automatically starts
