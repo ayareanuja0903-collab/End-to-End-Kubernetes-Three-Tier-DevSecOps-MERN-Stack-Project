@@ -29,21 +29,23 @@ stages {
         }
     }
 
-    stage('SonarQube Scan') {
-        steps {
-            dir('Application-Code/frontend') {
-                withSonarQubeEnv('sonar-scanner') {
-                    sh """
-                        sonar-scanner \
-                        -Dsonar.projectKey=frontend \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=$SONAR_HOST_URL \
-                        -Dsonar.login=$SONAR_AUTH_TOKEN
-                    """
-                }
-            }
+   steps {
+    dir('Application-Code/frontend') {
+
+        withSonarQubeEnv('sonar-server') {   // ✅ THIS IS CORRECT
+
+            def scannerHome = tool 'sonar-scanner'
+
+            sh """
+                ${scannerHome}/bin/sonar-scanner \
+                -Dsonar.projectKey=frontend \
+                -Dsonar.sources=. \
+                -Dsonar.host.url=$SONAR_HOST_URL \
+                -Dsonar.login=$SONAR_AUTH_TOKEN
+            """
         }
     }
+}
 
     // stage('OWASP Dependency Check') {
     //     steps {
