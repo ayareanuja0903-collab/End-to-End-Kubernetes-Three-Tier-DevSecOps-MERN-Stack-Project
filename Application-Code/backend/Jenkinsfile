@@ -1,0 +1,107 @@
+pipeline {
+agent any
+
+```
+environment {
+    IMAGE_NAME = "backend"
+    IMAGE_TAG = "${BUILD_NUMBER}"
+    AWS_REGION = "ap-south-1"
+    ECR_REPO = "588319087110.dkr.ecr.ap-south-1.amazonaws.com/backend"
+}
+
+tools {
+    jdk 'jdk17'
+    nodejs 'node18'
+}
+
+stages {
+
+    stage('Git Checkout') {
+        steps {
+            git branch: 'main',
+            url: 'https://github.com/YOUR_USERNAME/YOUR_REPO.git'
+        }
+    }
+
+    stage('Install Dependencies') {
+        steps {
+            dir('backend') {
+                sh 'npm install'
+            }
+        }
+    }
+
+    stage('SonarQube Scan') {
+        steps {
+            dir('backend') {
+                withSonarQubeEnv('sonar-server') {
+                    sh '''
+                    sonar-scanner \
+                    -Dsonar.projectKey=backend \
+                    -Dsonar.projectName=backend \
+                    -Dsonar.sources=. \
+                    -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+                    '''
+                }
+            }
+        }
+    }
+
+    stage('OWASP Dependency Check') {
+        steps {
+            dependencyCheck additionalArguments: '--scan backend',
+                            odcInstallation: 'OWASP-Dependency-Check'
+        }
+    }
+
+    stage('Publish OWASP Report') {
+        steps {
+            dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+        }
+    }
+
+    stage('Build Docker Image') {
+        steps {
+            dir('backend') {
+                sh '''
+                docker build -t backend:${BUILD_NUMBER} .
+                '''
+            }
+        }
+    }
+
+    stage('Trivy Scan') {
+        steps {
+            sh '''
+            trivy image backend:${BUILD_NUMBER}
+            '''
+        }
+    }
+
+    stage('ECR Login') {
+        steps {
+            sh '''
+            aws ecr get-login-password --region ${AWS_REGION} | \
+            docker login --username AWS \
+            --password-stdin 588319087110.dkr.ecr.ap-south-1.amazonaws.com
+            '''
+        }
+    }
+
+    stage('Push Image') {
+        steps {
+            sh '''
+            docker tag backend:${BUILD_NUMBER} ${ECR_REPO}:${BUILD_NUMBER}
+            docker push ${ECR_REPO}:${BUILD_NUMBER}
+            '''
+        }
+    }
+}
+
+post {
+    always {
+        cleanWs()
+    }
+}
+
+}
