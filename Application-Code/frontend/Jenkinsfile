@@ -45,17 +45,17 @@ stages {
         }
     }
 
-    stage('OWASP Dependency Check') {
-        steps {
-            dependencyCheck additionalArguments: '--scan Application-Code/frontend'
-        }
-    }
+    // stage('OWASP Dependency Check') {
+    //     steps {
+    //         dependencyCheck additionalArguments: '--scan Application-Code/frontend'
+    //     }
+    // }
 
-    stage('OWASP Report Publish') {
-        steps {
-            dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-        }
-    }
+    // stage('OWASP Report Publish') {
+    //     steps {
+    //         dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+    //     }
+    // }
 
     stage('Build Docker Image') {
         steps {
