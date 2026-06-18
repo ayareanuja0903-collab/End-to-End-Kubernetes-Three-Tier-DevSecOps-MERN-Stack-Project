@@ -96,7 +96,9 @@ stages {
 
                     IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/frontend:${BUILD_NUMBER}
 
-                    sed -i "s|REPLACE_IMAGE|$IMAGE_URI|g" k8s/frontend-deployment.yaml
+                    sed -i "s|image: .*|image: $IMAGE_URI|g" k8s/frontend-deployment.yaml
+
+                    cat k8s/frontend-deployment.yaml
 
                     git config --global user.email "jenkins@local"
                     git config --global user.name "jenkins"
