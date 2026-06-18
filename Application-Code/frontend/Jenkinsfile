@@ -5,7 +5,7 @@ agent any
 environment {
     IMAGE_NAME = "frontend"
     IMAGE_TAG = "${BUILD_NUMBER}"
-    ECR_REPO = "588319087110.dkr.ecr.ap-south-1.amazonaws.com/frontend"
+    AWS_REGION = "ap-south-1"
 }
 
 tools {
@@ -32,9 +32,7 @@ stages {
     stage('SonarQube Scan') {
         steps {
             dir('Application-Code/frontend') {
-
                 withSonarQubeEnv('sonar-server') {
-
                     sh """
                         ${tool 'sonar-scanner'}/bin/sonar-scanner \
                         -Dsonar.projectKey=frontend \
@@ -47,25 +45,11 @@ stages {
         }
     }
 
-   
-
-    // stage('OWASP Dependency Check') {
-    //     steps {
-    //         dependencyCheck additionalArguments: '--scan Application-Code/frontend'
-    //     }
-    // }
-
-    // stage('OWASP Report Publish') {
-    //     steps {
-    //         dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-    //     }
-    // }
-
     stage('Build Docker Image') {
         steps {
             dir('Application-Code/frontend') {
                 sh '''
-                docker build -t frontend:${BUILD_NUMBER} .
+                    docker build -t frontend:${BUILD_NUMBER} .
                 '''
             }
         }
@@ -73,46 +57,33 @@ stages {
 
     stage('Trivy Scan') {
         steps {
-            sh """
+            sh '''
                 /usr/bin/trivy image --exit-code 0 frontend:${BUILD_NUMBER}
-            """
+            '''
         }
     }
-    
+
     stage('ECR Login & Push') {
-    steps {
-        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
+        steps {
+            withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: 'aws-creds'
+            ]]) {
+                sh '''
+                    ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
-            sh """
-                aws ecr get-login-password --region ap-south-1 \
-                | docker login --username AWS --password-stdin <ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com
+                    ECR_REPO=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/frontend
 
-                docker tag frontend:16 <ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com/frontend:16
+                    aws ecr get-login-password --region $AWS_REGION | \
+                    docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
-                docker push <ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com/frontend:16
-            """
+                    docker tag frontend:${BUILD_NUMBER} $ECR_REPO:${BUILD_NUMBER}
+
+                    docker push $ECR_REPO:${BUILD_NUMBER}
+                '''
+            }
         }
     }
-}
-
-    // stage('ECR Login') {
-    //     steps {
-    //         sh '''
-    //         aws ecr get-login-password --region ap-south-1 | \
-    //         docker login --username AWS \
-    //         --password-stdin 588319087110.dkr.ecr.ap-south-1.amazonaws.com
-    //         '''
-    //     }
-    // }
-
-    // stage('Push Image') {
-    //     steps {
-    //         sh '''
-    //         docker tag frontend:${BUILD_NUMBER} ${ECR_REPO}:${BUILD_NUMBER}
-    //         docker push ${ECR_REPO}:${BUILD_NUMBER}
-    //         '''
-    //     }
-    // }
 }
 
 post {
