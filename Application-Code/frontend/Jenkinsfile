@@ -35,10 +35,8 @@ stages {
 
                 withSonarQubeEnv('sonar-server') {
 
-                    def scannerHome = tool 'sonar-scanner'
-
                     sh """
-                        ${scannerHome}/bin/sonar-scanner \
+                        ${tool 'sonar-scanner'}/bin/sonar-scanner \
                         -Dsonar.projectKey=frontend \
                         -Dsonar.sources=. \
                         -Dsonar.host.url=$SONAR_HOST_URL \
