@@ -84,6 +84,30 @@ stages {
             }
         }
     }
+
+    stage('Update Deployment Manifest') {
+        steps {
+            withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: 'aws-creds'
+            ]]) {
+                sh '''
+                    ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+
+                    IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/frontend:${BUILD_NUMBER}
+
+                    sed -i "s|REPLACE_IMAGE|$IMAGE_URI|g" Kubernetes/frontend/deployment.yaml
+
+                    git config --global user.email "jenkins@local"
+                    git config --global user.name "jenkins"
+
+                    git add Kubernetes/frontend/deployment.yaml
+                    git commit -m "Update frontend image ${BUILD_NUMBER}" || true
+                    git push origin main
+                '''
+            }
+        }
+    }
 }
 
 post {
