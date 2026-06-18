@@ -73,12 +73,12 @@ stages {
 
     stage('Trivy Scan') {
         steps {
-            sh '''
-            trivy image --exit-code 0 frontend:${BUILD_NUMBER}
-            '''
+            sh """
+                /usr/bin/trivy image --exit-code 0 frontend:${BUILD_NUMBER}
+            """
         }
     }
-
+    
     stage('ECR Login & Push') {
     steps {
         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
