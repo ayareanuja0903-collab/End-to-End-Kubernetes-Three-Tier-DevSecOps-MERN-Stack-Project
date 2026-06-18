@@ -10,7 +10,7 @@ environment {
 
 tools {
     jdk 'jdk17'
-    nodejs 'node18'
+    nodejs 'NodeJS 18'
 }
 
 stages {
