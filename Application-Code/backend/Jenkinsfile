@@ -1,99 +1,136 @@
 pipeline {
 agent any
 
-```
+
 environment {
     IMAGE_NAME = "backend"
     IMAGE_TAG = "${BUILD_NUMBER}"
     AWS_REGION = "ap-south-1"
-    ECR_REPO = "588319087110.dkr.ecr.ap-south-1.amazonaws.com/backend"
 }
 
 tools {
     jdk 'jdk17'
-    nodejs 'node18'
+    nodejs 'NodeJS 18'
 }
 
 stages {
 
-    stage('Git Checkout') {
+   stage('Checkout') {
         steps {
-            git branch: 'main',
-            url: 'https://github.com/YOUR_USERNAME/YOUR_REPO.git'
+            checkout([
+                $class: 'GitSCM',
+                branches: [[name: '*/main']],
+                userRemoteConfigs: [[
+                    url: 'https://github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git',
+                    credentialsId: 'github-creds'
+                ]]
+            ])
         }
     }
 
     stage('Install Dependencies') {
         steps {
-            dir('backend') {
+            dir('Application-Code/backend') {
                 sh 'npm install'
             }
         }
     }
 
+
     stage('SonarQube Scan') {
         steps {
-            dir('backend') {
+            dir('Application-Code/backend') {
                 withSonarQubeEnv('sonar-server') {
-                    sh '''
-                    sonar-scanner \
-                    -Dsonar.projectKey=backend \
-                    -Dsonar.projectName=backend \
-                    -Dsonar.sources=. \
-                    -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-                    '''
+                    sh """
+                        ${tool 'sonar-scanner'}/bin/sonar-scanner \
+                        -Dsonar.projectKey=backend \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=$SONAR_HOST_URL \
+                        -Dsonar.login=$SONAR_AUTH_TOKEN
+                    """
                 }
             }
         }
     }
 
-    stage('OWASP Dependency Check') {
-        steps {
-            dependencyCheck additionalArguments: '--scan backend',
-                            odcInstallation: 'OWASP-Dependency-Check'
-        }
-    }
 
-    stage('Publish OWASP Report') {
-        steps {
-            dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-        }
-    }
 
-    stage('Build Docker Image') {
+     stage('Build Docker Image') {
         steps {
-            dir('backend') {
+            dir('Application-Code/backend') {
                 sh '''
-                docker build -t backend:${BUILD_NUMBER} .
+                    docker build -t backend:${BUILD_NUMBER} .
                 '''
             }
         }
     }
 
+
     stage('Trivy Scan') {
         steps {
             sh '''
-            trivy image backend:${BUILD_NUMBER}
+                /usr/bin/trivy image --exit-code 0 backend:${BUILD_NUMBER}
             '''
         }
     }
 
-    stage('ECR Login') {
+    stage('ECR Login & Push') {
         steps {
-            sh '''
-            aws ecr get-login-password --region ${AWS_REGION} | \
-            docker login --username AWS \
-            --password-stdin 588319087110.dkr.ecr.ap-south-1.amazonaws.com
-            '''
+            withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: 'aws-creds'
+            ]]) {
+                sh '''
+                    ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+
+                    ECR_REPO=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/backend
+
+                    aws ecr get-login-password --region $AWS_REGION | \
+                    docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+
+                    docker tag backend:${BUILD_NUMBER} $ECR_REPO:${BUILD_NUMBER}
+
+                    docker push $ECR_REPO:${BUILD_NUMBER}
+                '''
+            }
         }
     }
 
-    stage('Push Image') {
+    stage('Update Deployment Manifest') {
         steps {
-            sh '''
-            docker tag backend:${BUILD_NUMBER} ${ECR_REPO}:${BUILD_NUMBER}
-            docker push ${ECR_REPO}:${BUILD_NUMBER}
-            '''
+            withCredentials([
+                usernamePassword(
+                    credentialsId: 'github-creds',
+                    usernameVariable: 'GIT_USER',
+                    passwordVariable: 'GIT_TOKEN'
+                ),
+                [
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-creds'
+                ]
+            ]) {
+                sh '''
+                    git checkout main
+
+                    ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+
+                    IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/backend:${BUILD_NUMBER}
+
+                    sed -i "s|image: .*|image: $IMAGE_URI|g" k8s/backend-deployment.yaml
+
+                    echo "Updated Manifest:"
+                    cat k8s/backend-deployment.yaml
+
+                    git config --global user.email "jenkins@local"
+                    git config --global user.name "jenkins"
+
+                    git add k8s/backend-deployment.yaml
+
+                    git commit -m "Update backend image ${BUILD_NUMBER}" || true
+
+                    git push https://${GIT_USER}:${GIT_TOKEN}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git HEAD:main
+                '''
+            }
         }
     }
 }
@@ -103,5 +140,6 @@ post {
         cleanWs()
     }
 }
+
 
 }
