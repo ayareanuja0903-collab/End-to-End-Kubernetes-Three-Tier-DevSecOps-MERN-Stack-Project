@@ -1,7 +1,7 @@
 pipeline {
 agent any
 
-
+```
 environment {
     IMAGE_NAME = "frontend"
     IMAGE_TAG = "${BUILD_NUMBER}"
@@ -15,9 +15,16 @@ tools {
 
 stages {
 
-    stage('Checkout') {
+   stage('Checkout') {
         steps {
-            checkout scm
+            checkout([
+                $class: 'GitSCM',
+                branches: [[name: '*/main']],
+                userRemoteConfigs: [[
+                    url: 'https://github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git',
+                    credentialsId: 'github-creds'
+                ]]
+            ])
         }
     }
 
@@ -87,25 +94,37 @@ stages {
 
     stage('Update Deployment Manifest') {
         steps {
-            withCredentials([[
-                $class: 'AmazonWebServicesCredentialsBinding',
-                credentialsId: 'aws-creds'
-            ]]) {
+            withCredentials([
+                usernamePassword(
+                    credentialsId: 'github-creds',
+                    usernameVariable: 'GIT_USER',
+                    passwordVariable: 'GIT_TOKEN'
+                ),
+                [
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-creds'
+                ]
+            ]) {
                 sh '''
+                    git checkout main
+
                     ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
                     IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/frontend:${BUILD_NUMBER}
 
                     sed -i "s|image: .*|image: $IMAGE_URI|g" k8s/frontend-deployment.yaml
 
+                    echo "Updated Manifest:"
                     cat k8s/frontend-deployment.yaml
 
                     git config --global user.email "jenkins@local"
                     git config --global user.name "jenkins"
 
                     git add k8s/frontend-deployment.yaml
+
                     git commit -m "Update frontend image ${BUILD_NUMBER}" || true
-                    git push origin main
+
+                    git push https://${GIT_USER}:${GIT_TOKEN}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git HEAD:main
                 '''
             }
         }
@@ -125,6 +144,6 @@ post {
         echo 'Frontend Pipeline Failed'
     }
 }
-
+```
 
 }
