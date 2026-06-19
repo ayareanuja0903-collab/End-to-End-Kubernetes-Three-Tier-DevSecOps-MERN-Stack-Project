@@ -93,42 +93,46 @@ stages {
     }
 
     stage('Update Deployment Manifest') {
-        steps {
-            withCredentials([
-                usernamePassword(
-                    credentialsId: 'github-creds',
-                    usernameVariable: 'GIT_USER',
-                    passwordVariable: 'GIT_TOKEN'
-                ),
-                [
-                    $class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-creds'
-                ]
-            ]) {
-                sh '''
-                    git checkout main
+    steps {
+        withCredentials([
+            usernamePassword(
+                credentialsId: 'github-creds',
+                usernameVariable: 'GIT_USER',
+                passwordVariable: 'GIT_TOKEN'
+            ),
+            [
+                $class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: 'aws-creds'
+            ]
+        ]) {
+            sh '''
+                git checkout main
 
-                    ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+                ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
-                    IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/frontend:${BUILD_NUMBER}
+                IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/frontend:${BUILD_NUMBER}
 
-                    sed -i "s|image: .*|image: $IMAGE_URI|g" k8s/frontend-deployment.yaml
+                sed -i "s|image: .*|image: $IMAGE_URI|g" k8s/frontend-deployment.yaml
 
-                    echo "Updated Manifest:"
-                    cat k8s/frontend-deployment.yaml
+                echo "Updated Manifest:"
+                cat k8s/frontend-deployment.yaml
 
-                    git config --global user.email "jenkins@local"
-                    git config --global user.name "jenkins"
+                git config --global user.email "jenkins@local"
+                git config --global user.name "jenkins"
 
-                    git add k8s/frontend-deployment.yaml
+                git add k8s/frontend-deployment.yaml
 
-                    git commit -m "Update frontend image ${BUILD_NUMBER}" || true
+                # Commit only if there is a change
+                git diff --cached --quiet || \
+                git commit -m "[skip ci] Update frontend image ${BUILD_NUMBER}"
 
-                    git push https://${GIT_USER}:${GIT_TOKEN}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git HEAD:main
-                '''
-            }
+                git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git
+
+                git push origin HEAD:main
+            '''
         }
     }
+}
 
 }
 
