@@ -1,7 +1,7 @@
 pipeline {
 agent any
 
-```
+
 environment {
     IMAGE_NAME = "frontend"
     IMAGE_TAG = "${BUILD_NUMBER}"
@@ -144,6 +144,6 @@ post {
         echo 'Frontend Pipeline Failed'
     }
 }
-```
+
 
 }
