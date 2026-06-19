@@ -15,7 +15,7 @@ tools {
 
 stages {
 
-   stage('Checkout') {
+    stage('Checkout') {
         steps {
             checkout([
                 $class: 'GitSCM',
@@ -36,7 +36,6 @@ stages {
         }
     }
 
-
     stage('SonarQube Scan') {
         steps {
             dir('Application-Code/backend') {
@@ -53,9 +52,7 @@ stages {
         }
     }
 
-
-
-     stage('Build Docker Image') {
+    stage('Build Docker Image') {
         steps {
             dir('Application-Code/backend') {
                 sh '''
@@ -64,7 +61,6 @@ stages {
             }
         }
     }
-
 
     stage('Trivy Scan') {
         steps {
@@ -128,7 +124,9 @@ stages {
 
                     git commit -m "Update backend image ${BUILD_NUMBER}" || true
 
-                    git push https://${GIT_USER}:${GIT_TOKEN}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git HEAD:main
+                    git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git
+
+                    git push origin HEAD:main
                 '''
             }
         }
@@ -138,6 +136,14 @@ stages {
 post {
     always {
         cleanWs()
+    }
+
+    success {
+        echo 'Backend Pipeline Completed Successfully'
+    }
+
+    failure {
+        echo 'Backend Pipeline Failed'
     }
 }
 
