@@ -1,88 +1,97 @@
 pipeline {
-agent any
+    agent any
 
-
-environment {
-    IMAGE_NAME = "backend"
-    IMAGE_TAG = "${BUILD_NUMBER}"
-    AWS_REGION = "ap-south-1"
-}
-
-tools {
-    jdk 'jdk17'
-    nodejs 'NodeJS 18'
-}
-
-stages {
-
-    stage('Clean Workspace') {
-        steps {
-            deleteDir()
-        }
+    environment {
+        IMAGE_NAME = "backend"
+        AWS_REGION = "ap-south-1"
     }
 
-    stage('Checkout') {
-        steps {
-            checkout([
-                $class: 'GitSCM',
-                branches: [[name: '*/main']],
-                userRemoteConfigs: [[
-                    url: 'https://github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git',
-                    credentialsId: 'github-creds'
-                ]]
-            ])
-        }
+    tools {
+        jdk 'jdk17'
+        nodejs 'NodeJS 18'
     }
 
-    stage('Install Dependencies') {
-        steps {
-            dir('Application-Code/backend') {
-                sh 'npm install'
+    stages {
+
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
             }
         }
-    }
 
-    stage('SonarQube Scan') {
-        steps {
-            dir('Application-Code/backend') {
-                withSonarQubeEnv('sonar-server') {
-                    sh """
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    credentialsId: 'github-creds',
+                    url: 'https://github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git'
+            }
+        }
+
+        stage('Skip Jenkins Commit') {
+            steps {
+                script {
+                    def commitMsg = sh(
+                        script: "git log -1 --pretty=%B",
+                        returnStdout: true
+                    ).trim()
+
+                    if (commitMsg.contains('[skip ci]')) {
+                        currentBuild.result = 'SUCCESS'
+                        error('Skipping Jenkins generated commit')
+                    }
+                }
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                dir('Application-Code/backend') {
+                    sh 'npm install'
+                }
+            }
+        }
+
+        stage('SonarQube Scan') {
+            steps {
+                dir('Application-Code/backend') {
+                    withSonarQubeEnv('sonar-server') {
+                        sh """
                         ${tool 'sonar-scanner'}/bin/sonar-scanner \
                         -Dsonar.projectKey=backend \
                         -Dsonar.sources=. \
                         -Dsonar.host.url=$SONAR_HOST_URL \
                         -Dsonar.login=$SONAR_AUTH_TOKEN
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('Application-Code/backend') {
+                    sh """
+                    docker build -t backend:${BUILD_NUMBER} .
                     """
                 }
             }
         }
-    }
 
-    stage('Build Docker Image') {
-        steps {
-            dir('Application-Code/backend') {
-                sh '''
-                    docker build -t backend:${BUILD_NUMBER} .
-                '''
+        stage('Trivy Scan') {
+            steps {
+                sh """
+                trivy image --exit-code 0 backend:${BUILD_NUMBER}
+                """
             }
         }
-    }
 
-    stage('Trivy Scan') {
-        steps {
-            sh '''
-                /usr/bin/trivy image --exit-code 0 backend:${BUILD_NUMBER}
-            '''
-        }
-    }
-
-    stage('ECR Login & Push') {
-        steps {
-            withCredentials([[
-                $class: 'AmazonWebServicesCredentialsBinding',
-                credentialsId: 'aws-creds'
-            ]]) {
-                sh '''
+        stage('Push Image To ECR') {
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-creds']
+                ]) {
+                    sh '''
                     ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
                     ECR_REPO=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/backend
@@ -93,67 +102,62 @@ stages {
                     docker tag backend:${BUILD_NUMBER} $ECR_REPO:${BUILD_NUMBER}
 
                     docker push $ECR_REPO:${BUILD_NUMBER}
-                '''
+                    '''
+                }
+            }
+        }
+
+        stage('Update Deployment Manifest') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'github-creds',
+                        usernameVariable: 'GIT_USER',
+                        passwordVariable: 'GIT_TOKEN'
+                    ),
+                    [
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: 'aws-creds'
+                    ]
+                ]) {
+
+                    sh '''
+                    git checkout main
+
+                    ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+
+                    IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/backend:${BUILD_NUMBER}
+
+                    sed -i "s|image: .*|image: $IMAGE_URI|g" k8s/backend-deployment.yaml
+
+                    git config --global user.email "jenkins@local"
+                    git config --global user.name "jenkins"
+
+                    git add k8s/backend-deployment.yaml
+
+                    git diff --cached --quiet || \
+                    git commit -m "[skip ci] Update backend image ${BUILD_NUMBER}"
+
+                    git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git
+
+                    git push origin HEAD:main
+                    '''
+                }
             }
         }
     }
 
-    stage('Update Deployment Manifest') {
-    steps {
-        withCredentials([
-            usernamePassword(
-                credentialsId: 'github-creds',
-                usernameVariable: 'GIT_USER',
-                passwordVariable: 'GIT_TOKEN'
-            ),
-            [
-                $class: 'AmazonWebServicesCredentialsBinding',
-                credentialsId: 'aws-creds'
-            ]
-        ]) {
-            sh '''
-                git checkout main
+    post {
+        always {
+            cleanWs()
+        }
 
-                ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+        success {
+            echo 'Backend Pipeline Completed Successfully'
+        }
 
-                IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/backend:${BUILD_NUMBER}
-
-                sed -i "s|image: .*|image: $IMAGE_URI|g" k8s/backend-deployment.yaml
-
-                echo "Updated Manifest:"
-                cat k8s/backend-deployment.yaml
-
-                git config --global user.email "jenkins@local"
-                git config --global user.name "jenkins"
-
-                git add k8s/backend-deployment.yaml
-
-                # Commit only if there is a change
-                git diff --cached --quiet || \
-                git commit -m "[skip ci] Update backend image ${BUILD_NUMBER}"
-
-                git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git
-
-                git push origin HEAD:main
-            '''
+        failure {
+            echo 'Backend Pipeline Failed'
         }
     }
-}
-}
-
-post {
-    always {
-        cleanWs()
-    }
-
-    success {
-        echo 'Backend Pipeline Completed Successfully'
-    }
-
-    failure {
-        echo 'Backend Pipeline Failed'
-    }
-}
-
-
 }
