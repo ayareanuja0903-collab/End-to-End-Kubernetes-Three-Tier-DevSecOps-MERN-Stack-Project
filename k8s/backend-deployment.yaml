@@ -20,7 +20,7 @@ spec:
      containers:
      - name: backend
 
-       image: 588319087110.dkr.ecr.ap-south-1.amazonaws.com/backend:8
+       image: 588319087110.dkr.ecr.ap-south-1.amazonaws.com/backend:9
 
        ports:
        - containerPort: 5000
