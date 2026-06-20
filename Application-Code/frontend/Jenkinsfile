@@ -121,9 +121,12 @@ pipeline {
                         credentialsId: 'aws-creds'
                     ]
                 ]) {
-
                     sh '''
-                    git checkout main
+                    rm -rf /tmp/gitops
+
+                    git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git /tmp/gitops
+
+                    cd /tmp/gitops
 
                     ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
@@ -131,22 +134,15 @@ pipeline {
 
                     sed -i "s|image: .*|image: $IMAGE_URI|g" k8s/frontend-deployment.yaml
 
-                    echo "Updated Manifest:"
-                    cat k8s/frontend-deployment.yaml
-
-                    git config --global user.email "jenkins@local"
-                    git config --global user.name "jenkins"
+                    git config user.email "jenkins@local"
+                    git config user.name "jenkins"
 
                     git add k8s/frontend-deployment.yaml
 
-                    if ! git diff --cached --quiet; then
-                        git commit -m "[skip ci] Update frontend image ${BUILD_NUMBER}"
-                    fi
+                    git diff --cached --quiet || \
+                    git commit -m "[skip ci] Update frontend image ${BUILD_NUMBER}"
 
-                    git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git
-
-                    git push --force-with-lease origin HEAD:main
-                    
+                    git push origin main
                     '''
                 }
             }
