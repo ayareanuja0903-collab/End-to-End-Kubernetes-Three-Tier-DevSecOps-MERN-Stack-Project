@@ -36,8 +36,9 @@ pipeline {
                     ).trim()
 
                     if (commitMsg.contains('[skip ci]')) {
+                        echo "Build triggered by Jenkins commit. Skipping..."
                         currentBuild.result = 'SUCCESS'
-                        error('Skipping Jenkins generated commit')
+                        return
                     }
                 }
             }
@@ -145,6 +146,8 @@ pipeline {
                     git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git
 
                     git push --force-with-lease origin HEAD:main
+
+                    git push origin HEAD:main
                     '''
                 }
             }

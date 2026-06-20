@@ -27,7 +27,7 @@ pipeline {
             }
         }
 
-        stage('Skip Jenkins Commit') {
+      stage('Skip Jenkins Commit') {
             steps {
                 script {
                     def commitMsg = sh(
@@ -36,8 +36,9 @@ pipeline {
                     ).trim()
 
                     if (commitMsg.contains('[skip ci]')) {
+                        echo "Build triggered by Jenkins commit. Skipping..."
                         currentBuild.result = 'SUCCESS'
-                        error('Skipping Jenkins generated commit')
+                        return
                     }
                 }
             }
