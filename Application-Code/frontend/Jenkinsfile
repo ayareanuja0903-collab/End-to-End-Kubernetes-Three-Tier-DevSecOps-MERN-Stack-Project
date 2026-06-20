@@ -13,7 +13,13 @@ tools {
     nodejs 'NodeJS 18'
 }
 
-stages {
+    stages {
+
+        stage('Clean Workspace') {
+        steps {
+            deleteDir()
+        }
+    }
 
    stage('Checkout') {
         steps {
