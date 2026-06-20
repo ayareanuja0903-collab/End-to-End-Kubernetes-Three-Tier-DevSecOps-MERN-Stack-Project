@@ -108,50 +108,50 @@ pipeline {
             }
         }
 
-        stage('Update Deployment Manifest') {
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'github-creds',
-                        usernameVariable: 'GIT_USER',
-                        passwordVariable: 'GIT_TOKEN'
-                    ),
-                    [
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: 'aws-creds'
-                    ]
-                ]) {
+        // stage('Update Deployment Manifest') {
+        //     steps {
+        //         withCredentials([
+        //             usernamePassword(
+        //                 credentialsId: 'github-creds',
+        //                 usernameVariable: 'GIT_USER',
+        //                 passwordVariable: 'GIT_TOKEN'
+        //             ),
+        //             [
+        //                 $class: 'AmazonWebServicesCredentialsBinding',
+        //                 credentialsId: 'aws-creds'
+        //             ]
+        //         ]) {
 
-                    sh '''
-                    git checkout main
+        //             sh '''
+        //             git checkout main
 
-                    ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+        //             ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
-                    IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/backend:${BUILD_NUMBER}
+        //             IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/backend:${BUILD_NUMBER}
 
-                    sed -i "s|image: .*|image: $IMAGE_URI|g" k8s/backend-deployment.yaml
+        //             sed -i "s|image: .*|image: $IMAGE_URI|g" k8s/backend-deployment.yaml
 
-                    echo "Updated Manifest:"
-                    cat k8s/backend-deployment.yaml
+        //             echo "Updated Manifest:"
+        //             cat k8s/backend-deployment.yaml
 
-                    git config --global user.email "jenkins@local"
-                    git config --global user.name "jenkins"
+        //             git config --global user.email "jenkins@local"
+        //             git config --global user.name "jenkins"
 
-                    git add k8s/backend-deployment.yaml
+        //             git add k8s/backend-deployment.yaml
 
-                    if ! git diff --cached --quiet; then
-                        git commit -m "[skip ci] Update backend image ${BUILD_NUMBER}"
-                    fi
+        //             if ! git diff --cached --quiet; then
+        //                 git commit -m "[skip ci] Update backend image ${BUILD_NUMBER}"
+        //             fi
 
-                    git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git
+        //             git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git
 
-                    git push --force-with-lease origin HEAD:main
+        //             git push --force-with-lease origin HEAD:main
 
-                    git push origin HEAD:main
-                    '''
-                }
-            }
-        }
+        //             git push origin HEAD:main
+        //             '''
+        //         }
+        //     }
+        // }
     }
 
     post {
