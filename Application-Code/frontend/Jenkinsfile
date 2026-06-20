@@ -139,8 +139,11 @@ pipeline {
 
                     git add k8s/frontend-deployment.yaml
 
-                    git diff --cached --quiet || \
-                    git commit -m "[skip ci] Update frontend image ${BUILD_NUMBER}"
+                     if ! git diff --cached --quiet; then
+                        git commit -m "[skip ci] Update backend image ${BUILD_NUMBER}"
+                    fi
+
+                     git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git
 
                     git push origin main
                     '''
