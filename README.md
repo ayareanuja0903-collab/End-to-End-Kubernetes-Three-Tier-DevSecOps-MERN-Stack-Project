@@ -1,255 +1,418 @@
-# Ansible Configuration Management
+# 🚀 End-to-End Kubernetes Three-Tier DevSecOps MERN Stack Project on AWS EKS
 
-## Overview
-
-This Ansible project automates the configuration and deployment of a three-tier web application on AWS. It installs the required software, configures servers, deploys the frontend and backend applications, sets up the database, and configures monitoring tools.
-
-This project is designed to work with infrastructure provisioned by Terraform and can be integrated into a Jenkins CI/CD pipeline.
+![Terraform](https://img.shields.io/badge/Terraform-IaC-623CE4?style=for-the-badge\&logo=terraform)
+![AWS](https://img.shields.io/badge/AWS-EKS-FF9900?style=for-the-badge\&logo=amazonaws)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-Orchestration-326CE5?style=for-the-badge\&logo=kubernetes)
+![Docker](https://img.shields.io/badge/Docker-Containers-2496ED?style=for-the-badge\&logo=docker)
+![Jenkins](https://img.shields.io/badge/Jenkins-CI/CD-D24939?style=for-the-badge\&logo=jenkins)
+![ArgoCD](https://img.shields.io/badge/ArgoCD-GitOps-EF7B4D?style=for-the-badge)
+![Prometheus](https://img.shields.io/badge/Prometheus-Monitoring-E6522C?style=for-the-badge\&logo=prometheus)
+![Grafana](https://img.shields.io/badge/Grafana-Dashboards-F46800?style=for-the-badge\&logo=grafana)
 
 ---
 
-## Project Structure
+# 📌 Project Overview
+
+This project demonstrates a **production-style End-to-End DevSecOps implementation** for deploying a **Three-Tier MERN Stack Application** on **Amazon Elastic Kubernetes Service (EKS)**.
+
+The project follows modern DevOps practices including:
+
+* Infrastructure as Code (Terraform)
+* Configuration Management (Ansible)
+* Containerization (Docker)
+* Kubernetes Orchestration
+* GitOps using ArgoCD
+* CI/CD using Jenkins
+* Security Scanning (SonarQube, Trivy, OWASP Dependency-Check)
+* Monitoring using Prometheus & Grafana
+* AWS ECR for container image storage
+
+---
+
+# 🏗️ Architecture
 
 ```text
-End-to-End-Kubernetes-Three-Tier-Project/
+Developer
+    │
+    ▼
+GitHub Repository
+    │
+    ▼
+GitHub Webhook
+    │
+    ▼
+Jenkins CI/CD
+    │
+    ├── Checkout Code
+    ├── Build
+    ├── Unit Test
+    ├── SonarQube Analysis
+    ├── OWASP Dependency Check
+    ├── Docker Build
+    ├── Trivy Scan
+    ├── Push Image to AWS ECR
+    └── Update Kubernetes Manifest
+    │
+    ▼
+GitHub Repository
+    │
+    ▼
+ArgoCD
+    │
+    ▼
+Amazon EKS
+    │
+    ├── Frontend
+    ├── Backend
+    └── MongoDB
+    │
+    ▼
+Prometheus
+    │
+    ▼
+Grafana Dashboards
+```
+
+---
+
+# 📁 Project Structure
+
+```text
+End-to-End-Kubernetes-Three-Tier-DevSecOps-Project/
 │
 ├── Application-Code/
-│   ├── backend/
-│   └── frontend/
+│   ├── frontend/
+│   └── backend/
 │
 ├── Terraform/
 │   ├── modules/
-│   │   ├── vpc/
-│   │   ├── eks/
-│   │   ├── ecr/
-│   │   ├── jenkins/
-│   │   ├── monitoring/
-│   │   ├── addons/
-│   │   ├── argocd/
-│   │   └── argocd_apps/
-│   │
 │   ├── provider.tf
 │   ├── variables.tf
 │   ├── outputs.tf
-│   ├── main.tf
-│   └── terraform.tfvars
-│
-├── Ansible/
-│   ├── inventory.ini
-│   ├── docker.yml
-│   ├── jenkins.yml
-│   ├── awscli.yml
-│   ├── kubectl.yml
-│   ├── helm.yml
-│   ├── trivy.yml
-│   ├── sonarqube.yml
-│   ├── prometheus.yml
-│   ├── grafana.yml
-│   └── node-exporter.yml
+│   └── main.tf
 │
 ├── kubernetes/
-│   ├── backend/
 │   ├── frontend/
+│   ├── backend/
 │   ├── mongodb/
 │   ├── ingress/
-│   ├── namespace/
-│   └── storage/
+│   ├── configmap/
+│   ├── secrets/
+│   ├── networkpolicy/
+│   ├── rbac/
+│   └── namespace.yaml
 │
 ├── helm-charts/
-│   ├── backend/
-│   ├── frontend/
-│   └── mongodb/
 │
-├── monitoring/
+├── ArgoCD/
 │
-├── docs/
+├── Monitoring/
 │
-├── scripts/
+├── Ansible/
 │
-├── Jenkinsfile
-├── README.md
-└── .gitignore
+├── Jenkins/
+│   ├── Jenkinsfile-Frontend
+│   ├── Jenkinsfile-Backend
+│   └── scripts/
+│
+└── README.md
 ```
 
 ---
 
-## Roles
+# 🛠️ Tech Stack
 
-### Common
+## Cloud
 
-* Updates Ubuntu packages
-* Installs common utilities
-* Configures timezone
-* Creates application directories
+* AWS
 
-### Docker
+## Infrastructure as Code
 
-* Installs Docker Engine
-* Installs Docker Compose Plugin
-* Starts and enables the Docker service
-* Adds the Ubuntu user to the Docker group
+* Terraform
 
-### Nginx
+## Configuration Management
 
-* Installs Nginx
-* Configures reverse proxy
-* Serves the frontend application
-* Proxies API requests to the backend
+* Ansible
 
-### NodeJS
+## Containerization
 
-* Installs Node.js 18 LTS
-* Installs npm
-* Installs PM2 process manager
+* Docker
 
-### Frontend
+## Container Registry
 
-* Clones the frontend repository
-* Installs dependencies
-* Builds the React application
-* Deploys static files to Nginx
+* Amazon ECR
 
-### Backend
+## Container Orchestration
 
-* Clones the backend repository
-* Installs Node.js dependencies
-* Creates the application environment file
-* Starts the application using PM2
+* Kubernetes (Amazon EKS)
 
-### MySQL
+## GitOps
 
-* Installs MySQL Server
-* Creates the application database
-* Creates the application user
-* Configures remote access
+* ArgoCD
 
-### Monitoring
+## CI/CD
 
-* Installs Prometheus
-* Installs Grafana
-* Installs Node Exporter
-* Configures monitoring services
+* Jenkins
 
----
+## Code Quality
 
-## Inventory
+* SonarQube
 
-Update `inventory/hosts.ini` with your EC2 instance IP addresses.
+## Security
 
-Example:
+* Trivy
+* OWASP Dependency-Check
 
-```ini
-[frontend]
-frontend-server ansible_host=<FRONTEND_PUBLIC_IP>
+## Monitoring
 
-[backend]
-backend-server ansible_host=<BACKEND_PUBLIC_IP>
+* Prometheus
+* Grafana
+* Node Exporter
 
-[database]
-database-server ansible_host=<DATABASE_PUBLIC_IP>
+## Application
 
-[monitoring]
-monitoring-server ansible_host=<MONITORING_PUBLIC_IP>
-
-[all:vars]
-ansible_user=ubuntu
-ansible_ssh_private_key_file=~/.ssh/my-key.pem
-ansible_python_interpreter=/usr/bin/python3
-```
+* React.js
+* Node.js
+* Express.js
+* MongoDB
 
 ---
 
-## Install Ansible Collections
+# 🚀 Features
+
+* Infrastructure Provisioning with Terraform
+* Automated Server Configuration using Ansible
+* Dockerized MERN Application
+* Kubernetes Deployment on Amazon EKS
+* Helm Charts
+* GitOps Deployment using ArgoCD
+* Jenkins CI/CD Pipelines
+* SonarQube Code Analysis
+* OWASP Dependency Scanning
+* Trivy Container Security Scanning
+* AWS ECR Integration
+* Horizontal Pod Autoscaler (HPA)
+* Network Policies
+* RBAC
+* ConfigMaps & Secrets
+* Persistent Storage for MongoDB
+* Prometheus Monitoring
+* Grafana Dashboards
+
+---
+
+# ⚙️ Deployment Workflow
+
+1. Developer pushes code to GitHub.
+2. GitHub Webhook triggers Jenkins.
+3. Jenkins checks out the latest source code.
+4. Dependencies are installed.
+5. Unit tests and linting are executed.
+6. SonarQube performs static code analysis.
+7. OWASP Dependency-Check scans project dependencies.
+8. Docker images are built.
+9. Trivy scans container images.
+10. Images are pushed to AWS ECR.
+11. Kubernetes deployment manifests are updated.
+12. Jenkins commits and pushes manifest changes.
+13. ArgoCD detects the changes.
+14. ArgoCD synchronizes the application with Amazon EKS.
+15. Prometheus collects metrics.
+16. Grafana visualizes dashboards.
+
+---
+
+# 📦 Deployment Order
 
 ```bash
-ansible-galaxy collection install -r requirements.yml
+Terraform
+
+↓
+
+Ansible
+
+↓
+
+Docker Build
+
+↓
+
+Push Images to AWS ECR
+
+↓
+
+Deploy Kubernetes Resources
+
+↓
+
+Deploy Helm Charts
+
+↓
+
+Configure ArgoCD
+
+↓
+
+Configure Jenkins Pipelines
+
+↓
+
+Monitor using Prometheus & Grafana
 ```
 
 ---
 
-## Verify Connectivity
+# ▶️ Getting Started
+
+## Clone Repository
 
 ```bash
-ansible all -i inventory/hosts.ini -m ping
+git clone https://github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git
 ```
 
 ---
 
-## Run Playbooks
-
-Deploy the complete environment:
+## Provision Infrastructure
 
 ```bash
+cd Terraform
+
+terraform init
+
+terraform plan
+
+terraform apply
+```
+
+---
+
+## Configure Servers
+
+```bash
+cd ../Ansible
+
 ansible-playbook playbooks/site.yml
 ```
 
-Deploy only the frontend:
+---
+
+## Deploy Kubernetes Resources
 
 ```bash
-ansible-playbook playbooks/frontend.yml
-```
-
-Deploy only the backend:
-
-```bash
-ansible-playbook playbooks/backend.yml
-```
-
-Deploy only the database:
-
-```bash
-ansible-playbook playbooks/database.yml
-```
-
-Deploy only monitoring:
-
-```bash
-ansible-playbook playbooks/monitoring.yml
+kubectl apply -f kubernetes/
 ```
 
 ---
 
-## Prerequisites
+## Configure ArgoCD
 
-* Ubuntu 22.04 or 24.04 EC2 instances
-* Python 3 installed
-* SSH access to all servers
-* Ansible installed on the control node
-* AWS infrastructure provisioned using Terraform
+Apply the ArgoCD Application manifests.
 
 ---
 
-## Technologies Used
+## Configure Jenkins
 
-* Ansible
-* Ubuntu Linux
-* Docker
-* Nginx
-* Node.js
-* PM2
-* MySQL
+* Configure Jenkins credentials
+* Install required plugins
+* Create Frontend and Backend pipelines
+* Configure GitHub Webhooks
+
+---
+
+## Monitoring
+
+Install:
+
 * Prometheus
 * Grafana
-* AWS EC2
+* Node Exporter
 
 ---
 
-## Automation Workflow
+# 📊 CI/CD Pipeline
 
-1. Terraform provisions AWS infrastructure.
-2. Ansible connects to EC2 instances over SSH.
-3. Common packages are installed.
-4. Docker and runtime dependencies are configured.
-5. Frontend and backend applications are deployed.
-6. MySQL is configured.
-7. Prometheus, Grafana, and Node Exporter are installed.
-8. All services are started and enabled.
-
+```text
+GitHub
+   │
+   ▼
+Jenkins
+   │
+   ├── Checkout
+   ├── Build
+   ├── Test
+   ├── SonarQube
+   ├── OWASP
+   ├── Docker Build
+   ├── Trivy
+   ├── AWS ECR
+   ├── Update Manifest
+   └── Git Push
+   │
+   ▼
+ArgoCD
+   │
+   ▼
+Amazon EKS
+```
 
 ---
 
-## Author
+# 📈 Monitoring Stack
+
+* Prometheus
+* Grafana
+* Node Exporter
+
+Metrics include:
+
+* CPU Usage
+* Memory Usage
+* Network Traffic
+* Pod Health
+* Node Health
+* Cluster Performance
+
+---
+
+# 🔐 Security
+
+* Kubernetes RBAC
+* Kubernetes Secrets
+* Network Policies
+* SonarQube Static Analysis
+* Trivy Image Scanning
+* OWASP Dependency-Check
+* Least Privilege Access
+
+---
+
+# 📚 Future Enhancements
+
+* Blue-Green Deployments
+* Canary Deployments
+* External Secrets Manager
+* AWS Load Balancer Controller
+* Cluster Autoscaler
+* KEDA Autoscaling
+* Loki Log Aggregation
+* Fluent Bit Log Collection
+* Alertmanager Notifications
+
+---
+
+# 👩‍💻 Author
 
 **Anuja Ayare**
 
-DevOps Engineer | AWS | Terraform | Ansible | Docker | Kubernetes | Jenkins | Prometheus | Grafana
+DevOps | Cloud | Kubernetes | Terraform | Jenkins | AWS
+
+---
+
+# ⭐ Support
+
+If you found this project helpful:
+
+* ⭐ Star this repository
+* 🍴 Fork the repository
+* 📢 Share it with others
+* 💡 Feel free to contribute
