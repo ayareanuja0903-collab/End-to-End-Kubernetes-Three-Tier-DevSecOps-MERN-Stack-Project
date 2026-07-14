@@ -58,3 +58,21 @@ variable "key_name" {
   description = "AWS EC2 Key Pair Name"
   type        = string
 }
+
+variable "github_owner" {
+  description = "GitHub Username or Organization"
+  type        = string
+  default     = "ayareanuja0903-collab"
+}
+
+variable "github_repository" {
+  description = "GitHub Repository Name"
+  type        = string
+  default     = "End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project"
+}
+
+variable "github_token" {
+  description = "GitHub Personal Access Token"
+  type        = string
+  sensitive   = true
+}
