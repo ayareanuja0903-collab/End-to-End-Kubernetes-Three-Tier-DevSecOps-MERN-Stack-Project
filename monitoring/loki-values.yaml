@@ -1,0 +1,19 @@
+loki:
+
+  auth_enabled: false
+
+singleBinary:
+
+  replicas: 1
+
+persistence:
+
+  enabled: true
+
+  storageClassName: gp3
+
+  size: 20Gi
+
+service:
+
+  type: ClusterIP

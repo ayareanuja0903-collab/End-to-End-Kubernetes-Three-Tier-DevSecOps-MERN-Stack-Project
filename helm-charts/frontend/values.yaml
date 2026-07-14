@@ -1,0 +1,47 @@
+replicaCount: 2
+
+
+image:
+
+  repository: YOUR_FRONTEND_ECR_URL
+
+  tag: latest
+
+  pullPolicy: Always
+
+
+
+service:
+
+  type: ClusterIP
+
+  port: 80
+
+
+
+resources:
+
+  requests:
+
+    cpu: 100m
+
+    memory: 128Mi
+
+
+  limits:
+
+    cpu: 300m
+
+    memory: 256Mi
+
+
+
+hpa:
+
+  enabled: true
+
+  minReplicas: 2
+
+  maxReplicas: 5
+
+  cpuUtilization: 70

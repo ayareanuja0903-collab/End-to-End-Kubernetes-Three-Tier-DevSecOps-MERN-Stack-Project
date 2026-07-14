@@ -1,0 +1,34 @@
+global:
+  domain: ""
+
+server:
+  service:
+    type: LoadBalancer
+
+  ingress:
+    enabled: false
+
+  extraArgs:
+    - --insecure
+
+configs:
+  params:
+    server.insecure: true
+
+controller:
+  replicas: 1
+
+repoServer:
+  replicas: 1
+
+applicationSet:
+  replicas: 1
+
+redis:
+  enabled: true
+
+dex:
+  enabled: false
+
+notifications:
+  enabled: false

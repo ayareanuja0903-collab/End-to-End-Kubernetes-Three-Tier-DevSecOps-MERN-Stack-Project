@@ -1,0 +1,12 @@
+---
+- import_playbook: common.yml
+- import_playbook: docker.yml
+- import_playbook: jenkins.yml
+- import_playbook: kubectl.yml
+- import_playbook: helm.yml
+- import_playbook: awscli.yml
+- import_playbook: trivy.yml
+- import_playbook: sonarqube.yml
+- import_playbook: prometheus.yml
+- import_playbook: grafana.yml
+- import_playbook: node-exporter.yml

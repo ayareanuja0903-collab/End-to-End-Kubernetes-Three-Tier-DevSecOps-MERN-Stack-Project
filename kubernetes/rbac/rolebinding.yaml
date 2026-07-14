@@ -1,0 +1,15 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: three-tier-rolebinding
+  namespace: three-tier
+
+subjects:
+- kind: ServiceAccount
+  name: three-tier-sa
+  namespace: three-tier
+
+roleRef:
+  kind: Role
+  name: three-tier-role
+  apiGroup: rbac.authorization.k8s.io

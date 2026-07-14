@@ -1,0 +1,21 @@
+---
+
+java_package: openjdk-17-jdk
+
+docker_packages:
+  - docker.io
+
+jenkins_repo_key: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+jenkins_repo: deb https://pkg.jenkins.io/debian-stable binary/
+
+kubectl_version: v1.33.0
+
+helm_version: v3.18.3
+
+awscli_url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+
+trivy_version: latest
+
+sonarqube_container: sonarqube
+
+sonarqube_port: 9000

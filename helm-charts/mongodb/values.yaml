@@ -1,0 +1,59 @@
+replicaCount: 1
+
+
+image:
+
+  repository: mongo
+
+  tag: "7.0"
+
+  pullPolicy: IfNotPresent
+
+
+
+service:
+
+  type: ClusterIP
+
+  port: 27017
+
+
+
+database:
+
+  name: three-tier-app
+
+
+
+auth:
+
+  username: admin
+
+  password: admin123
+
+
+
+storage:
+
+  enabled: true
+
+  size: 10Gi
+
+  storageClass: gp3
+
+
+
+resources:
+
+  requests:
+
+    cpu: 250m
+
+    memory: 512Mi
+
+
+  limits:
+
+    cpu: 500m
+
+    memory: 1Gi

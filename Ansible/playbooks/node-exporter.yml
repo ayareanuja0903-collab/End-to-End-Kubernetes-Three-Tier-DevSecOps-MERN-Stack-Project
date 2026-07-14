@@ -1,0 +1,19 @@
+---
+- name: Install Node Exporter
+  hosts: jenkins
+  become: yes
+
+  tasks:
+
+    - name: Install Prometheus Node Exporter
+      command: >
+        helm upgrade --install node-exporter
+        prometheus-community/prometheus-node-exporter
+        --namespace monitoring
+
+    - name: Verify Node Exporter
+      command: kubectl get pods -n monitoring
+      register: node_exporter_status
+
+    - debug:
+        var: node_exporter_status.stdout_lines

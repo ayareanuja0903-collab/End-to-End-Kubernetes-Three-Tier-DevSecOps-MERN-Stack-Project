@@ -1,0 +1,174 @@
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+
+  name: backend
+
+  namespace: three-tier-app
+
+
+spec:
+
+  replicas: 2
+
+
+  selector:
+
+    matchLabels:
+
+      app: backend
+
+
+  template:
+
+    metadata:
+
+      labels:
+
+        app: backend
+
+
+    spec:
+
+      serviceAccountName: three-tier-sa
+
+      containers:
+
+      - name: backend
+
+
+        image: YOUR_ECR_BACKEND_IMAGE:latest
+
+
+        imagePullPolicy: Always
+
+
+        ports:
+
+        - containerPort: 5000
+
+
+
+        env:
+
+
+        - name: NODE_ENV
+
+          valueFrom:
+
+            configMapKeyRef:
+
+              name: app-config
+
+              key: NODE_ENV
+
+
+
+        - name: MONGO_HOST
+
+          valueFrom:
+
+            configMapKeyRef:
+
+              name: app-config
+
+              key: MONGO_HOST
+
+
+
+        - name: MONGO_PORT
+
+          valueFrom:
+
+            configMapKeyRef:
+
+              name: app-config
+
+              key: MONGO_PORT
+
+
+
+        - name: MONGO_USERNAME
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: app-secret
+
+              key: MONGO_USERNAME
+
+
+
+        - name: MONGO_PASSWORD
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: app-secret
+
+              key: MONGO_PASSWORD
+
+
+
+        - name: MONGO_DATABASE
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: app-secret
+
+              key: MONGO_DATABASE
+
+
+
+        resources:
+
+          requests:
+
+            cpu: "250m"
+
+            memory: "256Mi"
+
+
+          limits:
+
+            cpu: "500m"
+
+            memory: "512Mi"
+
+
+
+        readinessProbe:
+
+          httpGet:
+
+            path: /
+
+            port: 5000
+
+
+          initialDelaySeconds: 10
+
+
+          periodSeconds: 10
+
+
+
+        livenessProbe:
+
+          httpGet:
+
+            path: /
+
+            port: 5000
+
+
+          initialDelaySeconds: 30
+
+
+          periodSeconds: 20

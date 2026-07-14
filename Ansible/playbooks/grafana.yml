@@ -1,0 +1,38 @@
+---
+- name: Install Grafana using Helm
+  hosts: jenkins
+  become: yes
+
+  tasks:
+
+    - name: Add Grafana Helm Repository
+      command: helm repo add grafana https://grafana.github.io/helm-charts
+      register: grafana_repo
+      failed_when: false
+      changed_when: "'has been added' in grafana_repo.stdout"
+
+    - name: Update Helm Repositories
+      command: helm repo update
+
+    - name: Install Grafana
+      command: >
+        helm upgrade --install grafana
+        grafana/grafana
+        --namespace monitoring
+
+    - name: Wait for Grafana Pod
+      command: kubectl get pods -n monitoring
+      register: grafana_status
+
+    - debug:
+        var: grafana_status.stdout_lines
+
+    - name: Get Grafana Password
+      shell: |
+        kubectl get secret grafana \
+        -n monitoring \
+        -o jsonpath="{.data.admin-password}" | base64 -d
+      register: grafana_password
+
+    - debug:
+        msg: "Grafana Password: {{ grafana_password.stdout }}"

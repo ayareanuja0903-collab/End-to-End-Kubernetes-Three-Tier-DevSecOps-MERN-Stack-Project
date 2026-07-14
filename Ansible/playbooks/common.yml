@@ -1,0 +1,27 @@
+---
+
+- name: Common Packages Installation
+  hosts: jenkins
+  become: yes
+
+  tasks:
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install common packages
+      apt:
+        name:
+          - git
+          - unzip
+          - curl
+          - wget
+          - vim
+          - zip
+          - jq
+          - software-properties-common
+          - apt-transport-https
+          - ca-certificates
+          - gnupg
+        state: present

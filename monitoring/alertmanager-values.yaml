@@ -1,0 +1,23 @@
+alertmanager:
+
+  enabled: true
+
+  alertmanagerSpec:
+
+    storage:
+
+      volumeClaimTemplate:
+
+        spec:
+
+          storageClassName: gp3
+
+          accessModes:
+
+            - ReadWriteOnce
+
+          resources:
+
+            requests:
+
+              storage: 5Gi

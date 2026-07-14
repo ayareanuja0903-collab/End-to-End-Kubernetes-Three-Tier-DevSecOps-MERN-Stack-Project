@@ -1,0 +1,61 @@
+apiVersion: argoproj.io/v1alpha1
+
+kind: Application
+
+
+metadata:
+
+  name: frontend-app
+
+  namespace: argocd
+
+
+
+spec:
+
+
+  project: default
+
+
+
+  source:
+
+
+    repoURL: https://github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git
+
+
+    targetRevision: main
+
+
+
+    path: helm-charts/frontend
+
+
+
+  destination:
+
+
+    server: https://kubernetes.default.svc
+
+
+    namespace: three-tier-app
+
+
+
+  syncPolicy:
+
+
+    automated:
+
+
+      prune: true
+
+
+      selfHeal: true
+
+
+
+    syncOptions:
+
+
+    - CreateNamespace=true

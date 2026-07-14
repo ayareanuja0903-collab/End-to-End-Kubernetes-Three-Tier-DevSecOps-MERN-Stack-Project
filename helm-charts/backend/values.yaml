@@ -1,0 +1,59 @@
+replicaCount: 2
+
+
+image:
+
+  repository: YOUR_BACKEND_ECR_URL
+
+  tag: latest
+
+  pullPolicy: Always
+
+
+
+service:
+
+  type: ClusterIP
+
+  port: 5000
+
+
+
+containerPort: 5000
+
+
+
+env:
+
+  NODE_ENV: production
+
+  MONGO_URL: mongodb://mongodb-service:27017/three-tier-app
+
+
+
+resources:
+
+  requests:
+
+    cpu: 200m
+
+    memory: 256Mi
+
+
+  limits:
+
+    cpu: 500m
+
+    memory: 512Mi
+
+
+
+hpa:
+
+  enabled: true
+
+  minReplicas: 2
+
+  maxReplicas: 6
+
+  cpuUtilization: 70

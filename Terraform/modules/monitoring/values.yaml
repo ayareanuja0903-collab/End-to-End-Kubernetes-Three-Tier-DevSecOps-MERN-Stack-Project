@@ -1,0 +1,29 @@
+grafana:
+  enabled: true
+
+  adminPassword: admin123
+
+  service:
+    type: LoadBalancer
+
+
+prometheus:
+  enabled: true
+
+  service:
+    type: LoadBalancer
+
+
+alertmanager:
+  enabled: true
+
+  service:
+    type: LoadBalancer
+
+
+nodeExporter:
+  enabled: true
+
+
+kubeStateMetrics:
+  enabled: true

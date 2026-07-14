@@ -1,0 +1,34 @@
+---
+- name: Install Prometheus using Helm
+  hosts: jenkins
+  become: yes
+
+  tasks:
+
+    - name: Add Prometheus Helm Repository
+      command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+      register: repo_add
+      changed_when: "'has been added' in repo_add.stdout"
+      failed_when: false
+
+    - name: Update Helm Repositories
+      command: helm repo update
+
+    - name: Create monitoring namespace
+      command: kubectl create namespace monitoring
+      register: namespace
+      failed_when: false
+      changed_when: "'created' in namespace.stdout"
+
+    - name: Install Prometheus
+      command: >
+        helm upgrade --install prometheus
+        prometheus-community/prometheus
+        --namespace monitoring
+
+    - name: Verify Prometheus
+      command: kubectl get pods -n monitoring
+      register: prometheus_status
+
+    - debug:
+        var: prometheus_status.stdout_lines

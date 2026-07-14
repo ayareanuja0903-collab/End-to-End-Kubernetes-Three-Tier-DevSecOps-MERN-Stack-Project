@@ -1,0 +1,39 @@
+adminUser: admin
+
+adminPassword: Admin@123
+
+service:
+
+  type: LoadBalancer
+
+persistence:
+
+  enabled: true
+
+  storageClassName: gp3
+
+  size: 10Gi
+
+grafana.ini:
+
+  server:
+
+    root_url: "%(protocol)s://%(domain)s/"
+
+datasources:
+
+  datasources.yaml:
+
+    apiVersion: 1
+
+    datasources:
+
+      - name: Prometheus
+
+        type: prometheus
+
+        access: proxy
+
+        url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+
+        isDefault: true

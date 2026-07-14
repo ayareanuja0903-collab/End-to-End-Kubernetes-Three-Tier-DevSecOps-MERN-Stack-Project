@@ -1,0 +1,95 @@
+apiVersion: networking.k8s.io/v1
+
+kind: NetworkPolicy
+
+
+metadata:
+
+  name: backend-policy
+
+  namespace: three-tier-app
+
+
+
+spec:
+
+
+  podSelector:
+
+    matchLabels:
+
+      app: backend
+
+
+
+  policyTypes:
+
+
+  - Ingress
+
+  - Egress
+
+
+
+  ingress:
+
+
+  # Allow only frontend communication
+
+  - from:
+
+
+    - podSelector:
+
+        matchLabels:
+
+          app: frontend
+
+
+    ports:
+
+
+    - protocol: TCP
+
+      port: 5000
+
+
+
+  egress:
+
+
+  # Allow MongoDB connection
+
+  - to:
+
+
+    - podSelector:
+
+        matchLabels:
+
+          app: mongodb
+
+
+    ports:
+
+
+    - protocol: TCP
+
+      port: 27017
+
+
+
+  # Allow DNS
+
+  - to:
+
+
+    - namespaceSelector: {}
+
+
+    ports:
+
+
+    - protocol: UDP
+
+      port: 53
