@@ -134,3 +134,8 @@ variable "enable_cluster_creator_admin_permissions" {
   type        = bool
   default     = true
 }
+
+variable "ebs_csi_role_arn" {
+  description = "IAM Role ARN for EBS CSI Driver"
+  type        = string
+}

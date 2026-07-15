@@ -7,8 +7,13 @@ resource "github_repository_webhook" "jenkins" {
   events = ["push"]
 
   configuration {
-    url          = "http://${module.ec2.jenkins_public_ip}:8080/github-webhook/"
+
+    url = "http://${module.jenkins.jenkins_public_ip}:8080/github-webhook/"
+
     content_type = "json"
+
     insecure_ssl = false
+
   }
+
 }

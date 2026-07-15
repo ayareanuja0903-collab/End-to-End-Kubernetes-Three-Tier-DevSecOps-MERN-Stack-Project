@@ -1,43 +1,32 @@
 terraform {
+  required_version = ">= 1.6.0"
 
   required_providers {
 
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.95"
+      version = "~> 5.0"
     }
 
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.35"
+      version = "~> 2.30"
     }
 
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 2.16"
-    }
-
-    http = {
-      source  = "hashicorp/http"
-      version = "~> 3.4"
+      version = "~> 2.17"
     }
 
     kubectl = {
       source  = "gavinbunney/kubectl"
-      version = "~> 1.14"
+      version = "1.19.0"
     }
 
-    tls = {
-      source  = "hashicorp/tls"
-      version = "~> 4.0"
-    }
-
-
-    local = {
-      source  = "hashicorp/local"
-      version = "~> 2.5"
+    github = {
+      source  = "integrations/github"
+      version = "~> 6.0"
     }
 
   }
-
 }
