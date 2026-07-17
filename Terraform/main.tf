@@ -36,6 +36,40 @@ module "eks" {
     Environment = var.environment
   }
 }
+resource "aws_iam_policy" "cluster_autoscaler" {
+
+  name = "AmazonEKSClusterAutoscalerPolicy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Effect = "Allow"
+
+        Action = [
+          "autoscaling:DescribeAutoScalingGroups",
+          "autoscaling:DescribeAutoScalingInstances",
+          "autoscaling:DescribeLaunchConfigurations",
+          "autoscaling:DescribeTags",
+          "autoscaling:SetDesiredCapacity",
+          "autoscaling:TerminateInstanceInAutoScalingGroup",
+          "ec2:DescribeLaunchTemplateVersions",
+          "ec2:DescribeInstanceTypes"
+        ]
+
+        Resource = "*"
+      }
+    ]
+  })
+}
+resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
+
+  policy_arn = aws_iam_policy.cluster_autoscaler.arn
+
+  role = module.eks.eks_managed_node_groups["worker"].iam_role_name
+
+}
 
 ################################################################################
 # EBS CSI Driver IRSA Role
