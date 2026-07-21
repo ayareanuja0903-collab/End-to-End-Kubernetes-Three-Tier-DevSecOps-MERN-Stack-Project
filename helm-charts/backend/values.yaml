@@ -2,25 +2,17 @@ replicaCount: 2
 
 
 image:
-
   repository: 023465168943.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-backend
-
   tag: latest
-
   pullPolicy: Always
 
 
-
 service:
-
   type: ClusterIP
-
   port: 5000
 
 
-
 containerPort: 5000
-
 
 
 env:
@@ -38,7 +30,6 @@ env:
   MONGO_PASSWORD: admin123
 
 
-
 resources:
 
   requests:
@@ -48,7 +39,6 @@ resources:
   limits:
     cpu: 500m
     memory: 512Mi
-
 
 
 hpa:
