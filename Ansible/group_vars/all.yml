@@ -1,21 +1,45 @@
 ---
+# -------------------------
+# Ansible
+# -------------------------
+ansible_user: ubuntu
+ansible_become: true
 
-java_package: openjdk-17-jdk
+# -------------------------
+# Docker
+# -------------------------
+docker_users:
+  - ubuntu
+  - jenkins
 
-docker_packages:
-  - docker.io
+# -------------------------
+# Java
+# -------------------------
+java_package: openjdk-21-jre
 
-jenkins_repo_key: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
-jenkins_repo: deb https://pkg.jenkins.io/debian-stable binary/
+# -------------------------
+# Jenkins
+# -------------------------
+jenkins_port: 8080
+jenkins_admin_user: admin
+jenkins_admin_password: Admin@123
 
-kubectl_version: v1.33.0
+# -------------------------
+# Kubernetes
+# -------------------------
+kubectl_version: "v1.31.0"
 
-helm_version: v3.18.3
+# -------------------------
+# Helm
+# -------------------------
+helm_version: "v3.18.4"
 
-awscli_url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+# -------------------------
+# Monitoring
+# -------------------------
+monitoring_namespace: monitoring
 
-trivy_version: latest
-
-sonarqube_container: sonarqube
-
-sonarqube_port: 9000
+# -------------------------
+# AWS Region
+# -------------------------
+aws_region: ap-south-1

@@ -1,26 +1,44 @@
 ---
-- name: Install Jenkins
+- name: Install and Configure Jenkins
   hosts: jenkins
-  become: yes
+  become: true
 
   tasks:
 
-    - name: Install Java
+    - name: Install required packages
       apt:
-        name: openjdk-17-jdk
+        name:
+          - openjdk-21-jre
+          - curl
+          - gnupg
         state: present
+        update_cache: yes
 
-    - name: Download Jenkins Key
-      apt_key:
-        url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
-        state: present
+    - name: Create APT keyrings directory
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
 
-    - name: Add Jenkins Repository
-      apt_repository:
-        repo: "deb https://pkg.jenkins.io/debian-stable binary/"
-        state: present
+    - name: Remove old Jenkins key
+      file:
+        path: /etc/apt/keyrings/jenkins-keyring.gpg
+        state: absent
 
-    - name: Update apt
+    - name: Download Jenkins 2026 GPG key
+      get_url:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
+        dest: /etc/apt/keyrings/jenkins-keyring.asc
+        mode: "0644"
+
+    - name: Add Jenkins repository
+      copy:
+        dest: /etc/apt/sources.list.d/jenkins.list
+        mode: "0644"
+        content: |
+          deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/
+
+    - name: Update apt cache
       apt:
         update_cache: yes
 
@@ -29,8 +47,47 @@
         name: jenkins
         state: present
 
-    - name: Enable Jenkins
-      service:
+    - name: Create Jenkins init.groovy.d directory
+      file:
+        path: /var/lib/jenkins/init.groovy.d
+        state: directory
+        owner: jenkins
+        group: jenkins
+        mode: "0755"
+
+    - name: Copy Groovy initialization script
+      template:
+        src: ../templates/basic-security.groovy.j2
+        dest: /var/lib/jenkins/init.groovy.d/basic-security.groovy
+        owner: jenkins
+        group: jenkins
+        mode: "0644"
+
+    - name: Copy Jenkins plugins list
+      copy:
+        src: ../files/plugins.txt
+        dest: /var/lib/jenkins/plugins.txt
+        owner: jenkins
+        group: jenkins
+        mode: "0644"
+
+    - name: Enable and start Jenkins
+      systemd:
         name: jenkins
         enabled: yes
-        state: started
+        state: restarted
+
+    - name: Wait for Jenkins to start
+      wait_for:
+        port: 8080
+        delay: 10
+        timeout: 180
+
+    - name: Verify Jenkins service
+      command: systemctl is-active jenkins
+      register: jenkins_status
+      changed_when: false
+
+    - name: Display Jenkins status
+      debug:
+        msg: "Jenkins status: {{ jenkins_status.stdout }}"

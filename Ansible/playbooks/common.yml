@@ -1,7 +1,6 @@
 ---
-
-- name: Common Packages Installation
-  hosts: jenkins
+- name: Common Configuration
+  hosts: all
   become: yes
 
   tasks:
@@ -10,18 +9,22 @@
       apt:
         update_cache: yes
 
+    - name: Upgrade packages
+      apt:
+        upgrade: dist
+
     - name: Install common packages
       apt:
         name:
-          - git
-          - unzip
           - curl
           - wget
+          - unzip
+          - git
           - vim
-          - zip
-          - jq
+          - nano
           - software-properties-common
           - apt-transport-https
           - ca-certificates
           - gnupg
+          - lsb-release
         state: present

@@ -1,0 +1,56 @@
+---
+- name: Monitoring Stack
+  hosts: all
+  become: yes
+
+  environment:
+    KUBECONFIG: /home/ubuntu/.kube/config
+
+  tasks:
+
+    - name: Create kubeconfig directory
+      file:
+        path: /home/ubuntu/.kube
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: "0755"
+
+    - name: Configure EKS kubeconfig
+      command: >
+        aws eks update-kubeconfig
+        --region ap-south-1
+        --name three-tier-dev-eks
+      become_user: ubuntu
+
+    - name: Verify Kubernetes connection
+      command: kubectl get nodes
+      register: kubectl_nodes
+      changed_when: false
+
+    - name: Display Kubernetes nodes
+      debug:
+        msg: "{{ kubectl_nodes.stdout }}"
+
+    - name: Add Prometheus Helm Repository
+      command: >
+        helm repo add prometheus-community
+        https://prometheus-community.github.io/helm-charts
+      register: helm_repo
+      changed_when: "'already exists' not in helm_repo.stdout"
+
+    - name: Update Helm repositories
+      command: helm repo update
+
+    - name: Create monitoring namespace
+      command: kubectl create namespace monitoring
+      register: namespace_create
+      failed_when: false
+      changed_when: "'created' in namespace_create.stdout"
+
+    - name: Install Prometheus Stack
+      command: >
+        helm upgrade --install kube-prometheus-stack
+        prometheus-community/kube-prometheus-stack
+        --namespace monitoring
+        --create-namespace
