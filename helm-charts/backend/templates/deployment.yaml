@@ -2,9 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 
 metadata:
-
   name: {{ include "backend.fullname" . }}
-
   labels:
     app: backend
 
@@ -17,7 +15,6 @@ spec:
   selector:
 
     matchLabels:
-
       app: backend
 
 
@@ -26,7 +23,6 @@ spec:
     metadata:
 
       labels:
-
         app: backend
 
 
@@ -55,32 +51,26 @@ spec:
 
 
         - name: NODE_ENV
-
           value: "{{ .Values.env.NODE_ENV }}"
 
 
         - name: PORT
-
           value: "{{ .Values.env.PORT }}"
 
 
         - name: MONGO_CONN_STR
-
           value: "{{ .Values.env.MONGO_CONN_STR }}"
 
 
         - name: USE_DB_AUTH
-
           value: "{{ .Values.env.USE_DB_AUTH }}"
 
 
         - name: MONGO_USERNAME
-
           value: "{{ .Values.env.MONGO_USERNAME }}"
 
 
         - name: MONGO_PASSWORD
-
           value: "{{ .Values.env.MONGO_PASSWORD }}"
 
 
@@ -89,13 +79,13 @@ spec:
 
           requests:
 
-            cpu: {{ .Values.resources.requests.cpu }}
+            cpu: "{{ .Values.resources.requests.cpu }}"
 
-            memory: {{ .Values.resources.requests.memory }}
+            memory: "{{ .Values.resources.requests.memory }}"
 
 
           limits:
 
-            cpu: {{ .Values.resources.limits.cpu }}
+            cpu: "{{ .Values.resources.limits.cpu }}"
 
-            memory: {{ .Values.resources.limits.memory }}
+            memory: "{{ .Values.resources.limits.memory }}"
