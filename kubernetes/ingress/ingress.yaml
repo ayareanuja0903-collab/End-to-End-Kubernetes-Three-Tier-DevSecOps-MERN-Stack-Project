@@ -12,17 +12,11 @@ metadata:
 
   annotations:
 
-    kubernetes.io/ingress.class: alb
-
-
     alb.ingress.kubernetes.io/scheme: internet-facing
-
 
     alb.ingress.kubernetes.io/target-type: ip
 
-
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
-
 
     alb.ingress.kubernetes.io/healthcheck-path: /
 
@@ -30,17 +24,15 @@ metadata:
 
 spec:
 
+  ingressClassName: alb
+
 
   rules:
 
-
   - http:
-
 
       paths:
 
-
-      # Frontend Route
 
       - path: /
 
@@ -57,8 +49,6 @@ spec:
               number: 80
 
 
-
-      # Backend API Route
 
       - path: /api
 
