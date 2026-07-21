@@ -2,33 +2,49 @@ apiVersion: apps/v1
 kind: Deployment
 
 metadata:
+
   name: {{ include "backend.fullname" . }}
+
   labels:
     app: backend
 
+
 spec:
+
   replicas: {{ .Values.replicaCount }}
 
+
   selector:
+
     matchLabels:
+
       app: backend
 
+
   template:
+
     metadata:
+
       labels:
+
         app: backend
+
 
     spec:
 
       serviceAccountName: three-tier-sa
 
+
       containers:
 
       - name: backend
 
+
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
 
+
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+
 
         ports:
 
@@ -37,23 +53,39 @@ spec:
 
         env:
 
+
         - name: NODE_ENV
+
           value: "{{ .Values.env.NODE_ENV }}"
 
 
         - name: PORT
+
           value: "{{ .Values.env.PORT }}"
 
 
         - name: MONGO_CONN_STR
+
           value: "{{ .Values.env.MONGO_CONN_STR }}"
 
 
         - name: USE_DB_AUTH
+
           value: "{{ .Values.env.USE_DB_AUTH }}"
 
 
+        - name: MONGO_USERNAME
+
+          value: "{{ .Values.env.MONGO_USERNAME }}"
+
+
+        - name: MONGO_PASSWORD
+
+          value: "{{ .Values.env.MONGO_PASSWORD }}"
+
+
         resources:
+
 
           requests:
 
