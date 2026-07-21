@@ -4,25 +4,39 @@ pipeline {
 
     tools {
         nodejs 'NodeJS18'
+        sonarQube 'sonar-scanner'
     }
 
     environment {
+
         AWS_REGION = "ap-south-1"
-        ECR_REPOSITORY = "backend"
-        IMAGE_TAG = "${BUILD_NUMBER}"
+
+        GITHUB_REPO = "https://github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git"
+
+        ECR_REPOSITORY = "three-tier-dev-backend"
 
         GITHUB_CREDS = "github-creds"
+
         AWS_CREDS = "aws-creds"
+
         SONARQUBE_ENV = "SonarQube"
+
     }
+
 
     options {
+
         timestamps()
+
         disableConcurrentBuilds()
+
         buildDiscarder(logRotator(numToKeepStr: '10'))
+
     }
 
+
     stages {
+
 
         stage('Checkout') {
 
@@ -33,8 +47,8 @@ pipeline {
                     url: "${GITHUB_REPO}"
 
             }
-
         }
+
 
         stage('Install Dependencies') {
 
@@ -45,10 +59,9 @@ pipeline {
                     sh 'npm install'
 
                 }
-
             }
-
         }
+
 
         stage('ESLint') {
 
@@ -59,10 +72,9 @@ pipeline {
                     sh 'npm run lint || true'
 
                 }
-
             }
-
         }
+
 
         stage('Unit Tests') {
 
@@ -73,10 +85,9 @@ pipeline {
                     sh 'npm test || true'
 
                 }
-
             }
-
         }
+
 
         stage('SonarQube Analysis') {
 
@@ -86,14 +97,14 @@ pipeline {
 
                     withSonarQubeEnv("${SONARQUBE_ENV}") {
 
-                        sh '''
+                        sh """
 
                         sonar-scanner \
                         -Dsonar.projectKey=backend \
                         -Dsonar.projectName=backend \
                         -Dsonar.sources=.
 
-                        '''
+                        """
 
                     }
 
@@ -102,6 +113,7 @@ pipeline {
             }
 
         }
+
 
         stage('Quality Gate') {
 
@@ -117,6 +129,7 @@ pipeline {
 
         }
 
+
         stage('OWASP Dependency Check') {
 
             steps {
@@ -130,22 +143,26 @@ pipeline {
 
         }
 
+
         stage('Load AWS Account ID') {
 
             steps {
 
                 withCredentials([
+
                     string(
                         credentialsId: 'aws-account-id',
                         variable: 'AWS_ACCOUNT_ID'
                     )
+
                 ]) {
 
                     script {
 
-                        env.IMAGE_NAME = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${BUILD_NUMBER}"
+                        env.IMAGE_NAME =
+                        "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${BUILD_NUMBER}"
 
-                        echo "Using ECR Repository: ${env.IMAGE_NAME}"
+                        echo "IMAGE: ${env.IMAGE_NAME}"
 
                     }
 
@@ -154,6 +171,7 @@ pipeline {
             }
 
         }
+
 
         stage('Build Docker Image') {
 
@@ -173,6 +191,7 @@ pipeline {
 
         }
 
+
         stage('Trivy Scan') {
 
             steps {
@@ -189,11 +208,13 @@ pipeline {
 
         }
 
+
         stage('Login to AWS ECR') {
 
-        steps {
+            steps {
 
                 withCredentials([
+
                     [$class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: "${AWS_CREDS}"],
 
@@ -207,8 +228,7 @@ pipeline {
                     sh """
 
                     aws ecr get-login-password \
-                    --region ${AWS_REGION} |
-
+                    --region ${AWS_REGION} | \
                     docker login \
                     --username AWS \
                     --password-stdin \
@@ -222,6 +242,7 @@ pipeline {
 
         }
 
+
         stage('Push Docker Image') {
 
             steps {
@@ -231,6 +252,7 @@ pipeline {
             }
 
         }
+
 
         stage('Update Helm values.yaml') {
 
@@ -247,16 +269,19 @@ pipeline {
 
         }
 
+
         stage('Commit & Push') {
 
             steps {
 
                 withCredentials([
+
                     usernamePassword(
                         credentialsId: "${GITHUB_CREDS}",
                         usernameVariable: 'GIT_USER',
                         passwordVariable: 'GIT_PASS'
                     )
+
                 ]) {
 
                     sh '''
@@ -269,7 +294,7 @@ pipeline {
 
                     git commit -m "Backend Image ${BUILD_NUMBER}" || true
 
-                    git push https://${GIT_USER}:${GIT_PASS}@github.com/YOUR_USERNAME/assignment-2june.git HEAD:main
+                    git push https://${GIT_USER}:${GIT_PASS}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git HEAD:main
 
                     '''
 
@@ -281,6 +306,7 @@ pipeline {
 
     }
 
+
     post {
 
         success {
@@ -289,11 +315,13 @@ pipeline {
 
         }
 
+
         failure {
 
             echo "Backend Pipeline Failed."
 
         }
+
 
         always {
 

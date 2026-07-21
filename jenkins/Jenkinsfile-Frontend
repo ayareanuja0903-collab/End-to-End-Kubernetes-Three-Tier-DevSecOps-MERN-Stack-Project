@@ -1,254 +1,493 @@
 pipeline {
+
     agent any
 
+
     tools {
+
         nodejs 'NodeJS18'
+
     }
 
-     environment {
+
+    environment {
+
         AWS_REGION = "ap-south-1"
-        ECR_REPOSITORY = "frontend"
-        IMAGE_TAG = "${BUILD_NUMBER}"
+
+        GITHUB_REPO = "https://github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git"
+
+        ECR_REPOSITORY = "three-tier-dev-frontend"
 
         GITHUB_CREDS = "github-creds"
+
         AWS_CREDS = "aws-creds"
+
         SONARQUBE_ENV = "SonarQube"
+
     }
 
+
     options {
+
         timestamps()
+
         disableConcurrentBuilds()
+
         buildDiscarder(logRotator(numToKeepStr: '10'))
+
     }
+
 
     stages {
 
+
         stage('Checkout Source') {
+
             steps {
-                git credentialsId: "${GITHUB_CREDENTIALS}",
+
+                git credentialsId: "${GITHUB_CREDS}",
                     branch: "main",
-                    url: "https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git"
+                    url: "${GITHUB_REPO}"
+
             }
+
         }
+
 
         stage('Install Dependencies') {
+
             steps {
+
                 dir('Application-Code/frontend') {
+
                     sh 'npm install'
+
                 }
+
             }
+
         }
+
 
         stage('Run ESLint') {
+
             steps {
+
                 dir('Application-Code/frontend') {
+
                     sh 'npm run lint || true'
+
                 }
+
             }
+
         }
+
 
         stage('Run Tests') {
+
             steps {
+
                 dir('Application-Code/frontend') {
+
                     sh 'npm test -- --watchAll=false || true'
+
                 }
+
             }
+
         }
 
+
         stage('Build React App') {
+
             steps {
+
                 dir('Application-Code/frontend') {
+
                     sh 'npm run build'
+
                 }
+
             }
+
         }
+
 
         stage('SonarQube Analysis') {
 
+
             steps {
+
 
                 dir('Application-Code/frontend') {
 
+
                     withSonarQubeEnv("${SONARQUBE_ENV}") {
 
+
                         sh '''
+
                         sonar-scanner \
                         -Dsonar.projectKey=frontend \
                         -Dsonar.projectName=frontend \
                         -Dsonar.sources=. \
                         -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+
                         '''
+
+
                     }
+
 
                 }
 
+
             }
 
+
         }
+
+
+
+        stage('Quality Gate') {
+
+
+            steps {
+
+
+                timeout(time: 5, unit: 'MINUTES') {
+
+
+                    waitForQualityGate abortPipeline: true
+
+
+                }
+
+
+            }
+
+
+        }
+
+
 
         stage('OWASP Dependency Check') {
+
+
             steps {
-                dependencyCheck additionalArguments: '--scan Application-Code/frontend',
-                odcInstallation: 'OWASP'
+
+
+                dependencyCheck(
+
+                    odcInstallation: 'OWASP',
+
+                    additionalArguments: '--scan Application-Code/frontend'
+
+                )
+
+
             }
+
+
         }
+
+
+
 
         stage('Initialize Environment') {
 
+
             steps {
 
+
                 withCredentials([
+
+
                     [$class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: "${AWS_CREDENTIALS}"]
+
+                    credentialsId: "${AWS_CREDS}"]
+
+
                 ]) {
+
 
                     script {
 
+
                         env.AWS_ACCOUNT_ID = sh(
+
                             script: "aws sts get-caller-identity --query Account --output text",
+
                             returnStdout: true
+
                         ).trim()
 
-                        env.IMAGE_TAG = "${BUILD_NUMBER}"
 
-                        env.IMAGE_NAME = "${env.AWS_ACCOUNT_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com/${env.ECR_REPOSITORY}:${env.IMAGE_TAG}"
 
-                        echo "AWS Account ID : ${env.AWS_ACCOUNT_ID}"
-                        echo "Docker Image   : ${env.IMAGE_NAME}"
+                        env.IMAGE_NAME =
+
+                        "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${BUILD_NUMBER}"
+
+
+
+                        echo "Docker Image: ${IMAGE_NAME}"
+
 
                     }
 
+
                 }
+
 
             }
 
+
         }
-        
+
+
+
+
         stage('Build Docker Image') {
+
+
             steps {
+
 
                 dir('Application-Code/frontend') {
 
+
                     sh """
+
                     docker build -t ${IMAGE_NAME} .
+
                     """
 
+
                 }
+
+
             }
+
+
         }
+
+
+
 
         stage('Trivy Image Scan') {
+
+
             steps {
 
+
                 sh """
+
+
                 trivy image --exit-code 0 --severity LOW,MEDIUM ${IMAGE_NAME}
 
+
+
                 trivy image --exit-code 1 --severity HIGH,CRITICAL ${IMAGE_NAME}
+
+
+
                 """
+
+
             }
+
+
         }
+
+
+
 
         stage('Login to AWS ECR') {
 
+
             steps {
 
+
                 withCredentials([
+
+
                     [$class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: "${AWS_CREDENTIALS}"]
+
+                    credentialsId: "${AWS_CREDS}"]
+
+
                 ]) {
 
+
                     sh """
-                    aws ecr get-login-password --region ${AWS_REGION} | \
+
+
+                    aws ecr get-login-password \
+
+                    --region ${AWS_REGION} | \
+
                     docker login \
+
                     --username AWS \
+
                     --password-stdin \
+
                     ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+
+
+
                     """
+
 
                 }
 
+
             }
 
+
         }
+
+
+
+
 
         stage('Push Docker Image') {
 
+
             steps {
 
+
                 sh """
+
                 docker push ${IMAGE_NAME}
+
                 """
+
 
             }
 
+
         }
+
+
+
 
         stage('Update Kubernetes Manifest') {
 
+
             steps {
 
+
                 sh """
+
+
                 sed -i 's|image:.*|image: ${IMAGE_NAME}|g' \
-                Kubernetes/frontend/deployment.yaml
+
+                kubernetes/frontend/deployment.yaml
+
+
+
                 """
+
 
             }
 
+
         }
+
+
+
 
         stage('Commit and Push Changes') {
 
+
             steps {
 
+
                 withCredentials([
+
+
                     usernamePassword(
-                    credentialsId: "${GITHUB_CREDENTIALS}",
+
+                    credentialsId: "${GITHUB_CREDS}",
+
                     usernameVariable: 'GIT_USER',
+
                     passwordVariable: 'GIT_PASS')
+
+
                 ]) {
+
 
                     sh '''
 
+
                     git config user.email "jenkins@devops.com"
+
 
                     git config user.name "Jenkins"
 
+
                     git add .
+
+
 
                     git commit -m "Update Frontend Image ${BUILD_NUMBER}" || true
 
-                    git push https://${GIT_USER}:${GIT_PASS}@github.com/YOUR_USERNAME/YOUR_REPOSITORY.git HEAD:main
+
+
+                    git push https://${GIT_USER}:${GIT_PASS}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git HEAD:main
+
+
 
                     '''
 
+
                 }
+
 
             }
 
+
         }
+
 
     }
 
+
+
     post {
+
 
         always {
 
+
             cleanWs()
+
 
         }
 
+
+
         success {
+
 
             echo "Frontend Pipeline Completed Successfully."
 
         }
 
+
+
         failure {
+
 
             echo "Frontend Pipeline Failed."
 
         }
 
+
     }
+
 
 }
