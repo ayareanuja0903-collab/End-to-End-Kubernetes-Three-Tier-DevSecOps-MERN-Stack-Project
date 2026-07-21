@@ -1,0 +1,68 @@
+# -------------------------
+# Git
+# -------------------------
+git
+github
+git-client
+github-branch-source
+
+# -------------------------
+# Pipeline
+# -------------------------
+workflow-aggregator
+pipeline-stage-view
+
+# -------------------------
+# Configuration as Code
+# -------------------------
+configuration-as-code
+
+# -------------------------
+# Docker
+# -------------------------
+docker-workflow
+docker-plugin
+
+# -------------------------
+# Kubernetes
+# -------------------------
+kubernetes
+kubernetes-cli
+
+# -------------------------
+# Ansible
+# -------------------------
+ansible
+
+# -------------------------
+# AWS
+# -------------------------
+aws-credentials
+
+# -------------------------
+# NodeJS
+# -------------------------
+nodejs
+
+# -------------------------
+# SonarQube
+# -------------------------
+sonar
+
+# -------------------------
+# SSH
+# -------------------------
+ssh-agent
+ssh-credentials
+
+# -------------------------
+# Utility
+# -------------------------
+workspace-cleanup
+matrix-auth
+credentials-binding
+
+# -------------------------
+# UI
+# -------------------------
+blueocean

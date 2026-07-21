@@ -3,6 +3,7 @@
 *.tfstate
 *.tfstate.*
 crash.log
+Terraform/keys/jenkins-key.pem
 terraform.tfvars
 *.tfvars
 override.tf

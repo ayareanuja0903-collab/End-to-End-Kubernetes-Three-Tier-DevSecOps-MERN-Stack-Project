@@ -1,0 +1,34 @@
+#!groovy
+
+import jenkins.model.*
+import hudson.security.*
+
+def instance = Jenkins.get()
+
+// Skip if security is already configured
+if (instance.isUseSecurity()) {
+    println "--> Jenkins security is already configured."
+    return
+}
+
+println "--> Creating Jenkins admin user..."
+
+def hudsonRealm = new HudsonPrivateSecurityRealm(false)
+
+if (hudsonRealm.getUser("{{ jenkins_admin_user }}") == null) {
+    hudsonRealm.createAccount(
+        "{{ jenkins_admin_user }}",
+        "{{ jenkins_admin_password }}"
+    )
+}
+
+instance.setSecurityRealm(hudsonRealm)
+
+def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
+strategy.setAllowAnonymousRead(false)
+
+instance.setAuthorizationStrategy(strategy)
+
+instance.save()
+
+println "--> Jenkins admin user created successfully."

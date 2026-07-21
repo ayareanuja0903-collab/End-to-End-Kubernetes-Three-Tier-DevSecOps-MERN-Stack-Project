@@ -21,3 +21,12 @@ output "security_group_id" {
 output "instance_profile" {
   value = aws_iam_instance_profile.jenkins.name
 }
+
+output "jenkins_security_group_id" {
+  description = "Jenkins Security Group ID"
+  value       = aws_security_group.jenkins.id
+}
+output "jenkins_role_arn" {
+  description = "Jenkins IAM Role ARN"
+  value       = aws_iam_role.jenkins.arn
+}

@@ -1,0 +1,4 @@
+community:
+  enabled: true
+
+monitoringPasscode: "sonarqube-monitoring-pass"

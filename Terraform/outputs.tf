@@ -34,3 +34,7 @@ output "argocd_release" {
   value = module.argocd.release_name
 
 }
+output "jenkins_role_arn" {
+  description = "Jenkins IAM Role ARN"
+  value       = module.jenkins.jenkins_role_arn
+}
