@@ -1,84 +1,69 @@
 apiVersion: apps/v1
-
 kind: Deployment
 
-
 metadata:
-
   name: {{ include "backend.fullname" . }}
-
-
+  labels:
+    app: backend
 
 spec:
-
   replicas: {{ .Values.replicaCount }}
 
-
-
   selector:
-
     matchLabels:
-
       app: backend
 
-
-
   template:
-
-
     metadata:
-
-
       labels:
-
-
         app: backend
-
-
 
     spec:
 
+      serviceAccountName: three-tier-sa
 
       containers:
 
-
       - name: backend
-
-
 
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
 
-
-
         imagePullPolicy: {{ .Values.image.pullPolicy }}
 
-
-
         ports:
-
 
         - containerPort: {{ .Values.containerPort }}
 
 
-
         env:
 
-
         - name: NODE_ENV
-
-
           value: "{{ .Values.env.NODE_ENV }}"
 
 
+        - name: PORT
+          value: "{{ .Values.env.PORT }}"
 
-        - name: MONGO_URL
+
+        - name: MONGO_CONN_STR
+          value: "{{ .Values.env.MONGO_CONN_STR }}"
 
 
-          value: "{{ .Values.env.MONGO_URL }}"
-
+        - name: USE_DB_AUTH
+          value: "{{ .Values.env.USE_DB_AUTH }}"
 
 
         resources:
 
+          requests:
 
-{{ toYaml .Values.resources | indent 10 }}
+            cpu: {{ .Values.resources.requests.cpu }}
+
+            memory: {{ .Values.resources.requests.memory }}
+
+
+          limits:
+
+            cpu: {{ .Values.resources.limits.cpu }}
+
+            memory: {{ .Values.resources.limits.memory }}
