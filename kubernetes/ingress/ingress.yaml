@@ -1,16 +1,4 @@
 apiVersion: networking.k8s.io/v1
-kind: IngressClass
-
-metadata:
-  name: alb
-
-spec:
-  controller: ingress.k8s.aws/alb
-
-
----
-
-apiVersion: networking.k8s.io/v1
 kind: Ingress
 
 metadata:
@@ -18,11 +6,8 @@ metadata:
   namespace: three-tier-app
 
   annotations:
-
     alb.ingress.kubernetes.io/scheme: internet-facing
-
     alb.ingress.kubernetes.io/target-type: ip
-
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
 
 
@@ -36,23 +21,61 @@ spec:
 
       paths:
 
-      - path: /
-        pathType: Prefix
 
-        backend:
-
-          service:
-            name: frontend-service
-            port:
-              number: 80
-
-
+      # Backend API
       - path: /api
         pathType: Prefix
 
         backend:
-
           service:
             name: backend-service
             port:
               number: 5000
+
+
+
+      # Backend health check
+      - path: /healthz
+        pathType: Exact
+
+        backend:
+          service:
+            name: backend-service
+            port:
+              number: 5000
+
+
+
+      # Backend readiness
+      - path: /ready
+        pathType: Exact
+
+        backend:
+          service:
+            name: backend-service
+            port:
+              number: 5000
+
+
+
+      # Backend started check
+      - path: /started
+        pathType: Exact
+
+        backend:
+          service:
+            name: backend-service
+            port:
+              number: 5000
+
+
+
+      # React frontend
+      - path: /
+        pathType: Prefix
+
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
