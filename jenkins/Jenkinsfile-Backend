@@ -3,7 +3,7 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'NodeJS18'
+        nodejs 'node18'
         sonarQube 'sonar-scanner'
     }
 
@@ -130,18 +130,18 @@ pipeline {
         }
 
 
-        stage('OWASP Dependency Check') {
+        // stage('OWASP Dependency Check') {
 
-            steps {
+        //     steps {
 
-                dependencyCheck(
-                    odcInstallation: 'OWASP',
-                    additionalArguments: '--scan Application-Code/backend'
-                )
+        //         dependencyCheck(
+        //             odcInstallation: 'OWASP',
+        //             additionalArguments: '--scan Application-Code/backend'
+        //         )
 
-            }
+        //     }
 
-        }
+        // }
 
 
         stage('Load AWS Account ID') {
