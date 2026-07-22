@@ -44,3 +44,12 @@ output "eks_managed_node_groups" {
   value = module.eks.eks_managed_node_groups
 }
 
+############################################################
+# AWS Load Balancer Controller IRSA Outputs
+############################################################
+
+output "cluster_oidc_issuer_url" {
+
+  value = module.eks.cluster_oidc_issuer_url
+
+}
