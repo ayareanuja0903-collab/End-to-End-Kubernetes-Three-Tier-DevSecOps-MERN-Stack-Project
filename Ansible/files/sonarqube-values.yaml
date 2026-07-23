@@ -1,4 +1,26 @@
 community:
   enabled: true
 
-monitoringPasscode: "sonarqube-monitoring-pass"
+monitoringPasscode: "sonar123"
+
+service:
+  type: LoadBalancer
+
+persistence:
+  enabled: true
+  size: 10Gi
+
+postgresql:
+  enabled: true
+  auth:
+    username: sonar
+    password: sonar
+    database: sonarqube
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 2Gi
+  limits:
+    cpu: 1000m
+    memory: 4Gi
