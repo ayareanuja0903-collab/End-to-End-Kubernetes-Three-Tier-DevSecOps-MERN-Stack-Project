@@ -48,3 +48,13 @@ coverage/
 
 # Mac
 .DS_Store
+
+# AWS CLI
+playbooks/aws/
+playbooks/awscliv2.zip
+
+# Kubectl binary
+playbooks/kubectl
+
+# Trivy binary
+playbooks/bin/trivy
