@@ -61,3 +61,6 @@ playbooks/bin/trivy
 
  Ansible/playbooks/aws/
  Ansible/playbooks/bin/
+Ansible/playbooks/bin/trivy
+Ansible/playbooks/awscliv2.zip
+Ansible/playbooks/kubectl
