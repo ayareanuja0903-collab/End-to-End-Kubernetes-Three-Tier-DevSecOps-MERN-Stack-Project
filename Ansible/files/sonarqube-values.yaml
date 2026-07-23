@@ -8,6 +8,8 @@ service:
 
 persistence:
   enabled: true
+  storageClass: gp2
+  accessMode: ReadWriteOnce
   size: 10Gi
 
 postgresql:

@@ -59,5 +59,11 @@ playbooks/kubectl
 # Trivy binary
 playbooks/bin/trivy
 
- Ansible/playbooks/aws/
- Ansible/playbooks/bin/
+ # Security tools binaries
+Ansible/playbooks/bin/
+Ansible/playbooks/*.zip
+
+# Local tools
+kubectl
+trivy
+awscliv2.zip
