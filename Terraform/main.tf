@@ -201,3 +201,20 @@ module "addons" {
     null_resource.helm_repo_update
   ]
 }
+
+resource "null_resource" "fix_pem_permissions" {
+
+  provisioner "local-exec" {
+    interpreter = ["PowerShell", "-Command"]
+
+    command = <<EOT
+icacls "${path.root}/keys/jenkins-key.pem" /inheritance:r
+icacls "${path.root}/keys/jenkins-key.pem" /grant:r "$($env:USERNAME):(R)"
+icacls "${path.root}/keys/jenkins-key.pem" /remove "Users" "Authenticated Users" "Everyone"
+EOT
+  }
+
+  triggers = {
+    always = timestamp()
+  }
+}
