@@ -144,30 +144,60 @@ module "alb_controller" {
 
 }
 
-module "argocd" {
+################################################################################
+# Helm Repository Initialization
+################################################################################
 
+resource "null_resource" "helm_repo_update" {
+
+  provisioner "local-exec" {
+    interpreter = ["PowerShell", "-Command"]
+
+    command = <<EOT
+helm repo add argo https://argoproj.github.io/argo-helm --force-update
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts --force-update
+helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server --force-update
+helm repo add autoscaler https://kubernetes.github.io/autoscaler --force-update
+helm repo update
+EOT
+  }
+
+  triggers = {
+    always = timestamp()
+  }
+}
+
+module "argocd" {
   source = "./modules/argocd"
 
   namespace = "argocd"
 
+  depends_on = [
+    module.eks,
+    null_resource.helm_repo_update
+  ]
 }
 
 module "monitoring" {
-
   source = "./modules/monitoring"
 
   cluster_name = module.eks.cluster_name
+  namespace    = "monitoring"
 
-  namespace = "monitoring"
-
+  depends_on = [
+    module.eks,
+    null_resource.helm_repo_update
+  ]
 }
 
 module "addons" {
-
   source = "./modules/addons"
 
   cluster_name = module.eks.cluster_name
+  region        = var.aws_region
 
-  region = var.aws_region
-
+  depends_on = [
+    module.eks,
+    null_resource.helm_repo_update
+  ]
 }
