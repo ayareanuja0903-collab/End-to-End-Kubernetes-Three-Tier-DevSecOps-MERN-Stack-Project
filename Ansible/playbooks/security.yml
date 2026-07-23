@@ -28,6 +28,14 @@
       args:
         creates: /usr/local/bin/trivy
 
+    - name: Add SonarQube Helm repository
+      command: helm repo add sonarqube https://SonarSource.github.io/helm-chart-sonarqube
+      register: sonar_repo
+      changed_when: "'has been added' in sonar_repo.stdout or 'already exists' not in sonar_repo.stderr"
+      failed_when: false
+
+    - name: Update Helm repositories
+      command: helm repo update
 
     # -------------------------
     # SonarScanner Installation
@@ -80,7 +88,7 @@
         sonarqube/sonarqube
         --namespace sonarqube
         --create-namespace
-        -f /home/ubuntu/Ansible/files/sonarqube-values.yaml
+        -f "{{ playbook_dir }}/../files/sonarqube-values.yaml"
 
 
     - name: Expose SonarQube Service
