@@ -58,3 +58,6 @@ playbooks/kubectl
 
 # Trivy binary
 playbooks/bin/trivy
+
+ Ansible/playbooks/aws/
+ Ansible/playbooks/bin/
