@@ -66,14 +66,6 @@ spec:
           value: "{{ .Values.env.USE_DB_AUTH }}"
 
 
-        - name: MONGO_USERNAME
-          value: "{{ .Values.env.MONGO_USERNAME }}"
-
-
-        - name: MONGO_PASSWORD
-          value: "{{ .Values.env.MONGO_PASSWORD }}"
-
-
         resources:
 
 

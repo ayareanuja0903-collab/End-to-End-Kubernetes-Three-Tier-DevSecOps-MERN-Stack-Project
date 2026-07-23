@@ -23,7 +23,7 @@ env:
 
   MONGO_CONN_STR: mongodb://mongodb-service:27017/three-tier-app
 
-  USE_DB_AUTH: "true"
+  USE_DB_AUTH: "false"
 
 
 resources:
