@@ -25,10 +25,6 @@ env:
 
   USE_DB_AUTH: "true"
 
-  MONGO_USERNAME: admin
-
-  MONGO_PASSWORD: admin123
-
 
 resources:
 

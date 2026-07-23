@@ -1,90 +1,70 @@
 apiVersion: apps/v1
 kind: Deployment
-
 metadata:
   name: backend
   namespace: three-tier-app
   labels:
     app: backend
-
 spec:
-
   replicas: 2
-
   selector:
     matchLabels:
       app: backend
-
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
   template:
-
     metadata:
       labels:
         app: backend
-
     spec:
-
       serviceAccountName: three-tier-sa
 
       containers:
+        - name: backend
+          image: 023465168943.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-backend:latest
+          imagePullPolicy: Always
 
-      - name: backend
+          ports:
+            - containerPort: 5000
 
-        image: 023465168943.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-backend:latest
+          env:
+            - name: NODE_ENV
+              value: "production"
 
-        imagePullPolicy: Always
+            - name: PORT
+              value: "5000"
 
-        ports:
+            - name: MONGO_CONN_STR
+              value: "mongodb://mongodb-service:27017/three-tier-app"
 
-        - containerPort: 5000
+            - name: USE_DB_AUTH
+              value: "false"
 
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
 
-        env:
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
 
-        - name: NODE_ENV
-          value: "production"
-
-
-        - name: PORT
-          value: "5000"
-
-
-        # IMPORTANT:
-        # Your backend db.js reads process.env.MONGO_CONN_STR
-        - name: MONGO_CONN_STR
-          value: "mongodb://mongodb-service:27017/three-tier-app"
-
-
-        # MongoDB authentication disabled
-        - name: USE_DB_AUTH
-          value: "false"
-
-
-        resources:
-
-          requests:
-            cpu: "200m"
-            memory: "256Mi"
-
-          limits:
-            cpu: "500m"
-            memory: "512Mi"
-
-
-        readinessProbe:
-
-          httpGet:
-            path: /
-            port: 5000
-
-          initialDelaySeconds: 10
-          periodSeconds: 10
-
-
-        livenessProbe:
-
-          httpGet:
-            path: /
-            port: 5000
-
-          initialDelaySeconds: 30
-          periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3

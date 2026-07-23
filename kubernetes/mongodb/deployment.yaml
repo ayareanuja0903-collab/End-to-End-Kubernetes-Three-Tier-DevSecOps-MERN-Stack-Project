@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mongodb
-  namespace: three-tier
+  namespace: three-tier-app
 spec:
   replicas: 1
 
