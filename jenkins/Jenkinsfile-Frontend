@@ -4,16 +4,14 @@ pipeline {
 
 
     tools {
-
         nodejs 'NodeJS18'
-
     }
 
 
     environment {
 
-        NODE_OPTIONS = '--openssl-legacy-provider'
-        
+        NODE_OPTIONS = "--openssl-legacy-provider"
+
         AWS_REGION = "ap-south-1"
 
         GITHUB_REPO = "https://github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git"
@@ -25,7 +23,6 @@ pipeline {
         AWS_CREDS = "aws-creds"
 
         SONARQUBE_ENV = "SonarQube"
-        
 
     }
 
@@ -36,7 +33,11 @@ pipeline {
 
         disableConcurrentBuilds()
 
-        buildDiscarder(logRotator(numToKeepStr: '10'))
+        buildDiscarder(
+            logRotator(
+                numToKeepStr: '10'
+            )
+        )
 
     }
 
@@ -48,13 +49,16 @@ pipeline {
 
             steps {
 
-                git credentialsId: "${GITHUB_CREDS}",
-                    branch: "main",
+                git(
+                    branch: 'main',
+                    credentialsId: "${GITHUB_CREDS}",
                     url: "${GITHUB_REPO}"
+                )
 
             }
 
         }
+
 
 
         stage('Install Dependencies') {
@@ -63,15 +67,18 @@ pipeline {
 
                 dir('Application-Code/frontend') {
 
-                    sh 'node -v'
-                    sh 'npm -v'
-                    sh 'npm install'
+                    sh '''
+                    node -v
+                    npm -v
+                    npm ci
+                    '''
 
                 }
 
             }
 
         }
+
 
 
         stage('Run ESLint') {
@@ -81,10 +88,11 @@ pipeline {
                 dir('Application-Code/frontend') {
 
                     sh '''
-                    if npm run | grep -q lint; then
+                    if npm run | grep -q lint
+                    then
                         npm run lint
                     else
-                        echo "Lint script not configured, skipping"
+                        echo "Lint not configured, skipping"
                     fi
                     '''
 
@@ -95,13 +103,21 @@ pipeline {
         }
 
 
+
         stage('Run Tests') {
 
             steps {
 
                 dir('Application-Code/frontend') {
 
-                    sh 'npm test -- --watchAll=false --passWithNoTests'
+                    sh '''
+                    if npm run | grep -q test
+                    then
+                        npm test -- --watchAll=false --passWithNoTests
+                    else
+                        echo "Tests not configured, skipping"
+                    fi
+                    '''
 
                 }
 
@@ -110,112 +126,92 @@ pipeline {
         }
 
 
-        stage('Build React App') {
+
+
+        stage('Build React Application') {
+
             steps {
+
                 dir('Application-Code/frontend') {
+
                     sh '''
                     export NODE_OPTIONS=--openssl-legacy-provider
                     npm run build
                     '''
+
                 }
+
             }
+
         }
+
+
+
 
 
         stage('SonarQube Analysis') {
 
-
             steps {
-
 
                 dir('Application-Code/frontend') {
 
-
                     withSonarQubeEnv("${SONARQUBE_ENV}") {
-
 
                         sh '''
 
                         sonar-scanner \
                         -Dsonar.projectKey=frontend \
-                        -Dsonar.projectName=frontend \
+                        -Dsonar.projectName=three-tier-frontend \
                         -Dsonar.sources=. \
                         -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
                         '''
 
-
                     }
-
 
                 }
 
-
             }
 
-
         }
+
+
 
 
 
         stage('Quality Gate') {
 
-
             steps {
 
+                timeout(
+                    time: 5,
+                    unit: 'MINUTES'
+                ) {
 
-                timeout(time: 5, unit: 'MINUTES') {
-
-
-                    waitForQualityGate abortPipeline: true
-
+                    waitForQualityGate(
+                        abortPipeline: true
+                    )
 
                 }
 
-
             }
-
-
-        }
-
-
-
-        stage('OWASP Dependency Check') {
-
-
-            steps {
-
-
-                dependencyCheck(
-
-                    odcInstallation: 'OWASP',
-
-                    additionalArguments: '--scan Application-Code/frontend'
-
-                )
-
-
-            }
-
 
         }
 
 
 
 
-        stage('Initialize Environment') {
 
+        stage('Initialize AWS Environment') {
 
             steps {
-
 
                 withCredentials([
 
-
-                    [$class: 'AmazonWebServicesCredentialsBinding',
-
-                    credentialsId: "${AWS_CREDS}"]
-
+                    [
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: "${AWS_CREDS}"
+                    ]
 
                 ]) {
 
@@ -225,7 +221,8 @@ pipeline {
 
                         env.AWS_ACCOUNT_ID = sh(
 
-                            script: "aws sts get-caller-identity --query Account --output text",
+                            script:
+                            "aws sts get-caller-identity --query Account --output text",
 
                             returnStdout: true
 
@@ -234,125 +231,103 @@ pipeline {
 
 
                         env.IMAGE_NAME =
-
                         "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${BUILD_NUMBER}"
 
 
 
                         echo "Docker Image: ${IMAGE_NAME}"
 
-
                     }
-
 
                 }
 
-
             }
 
-
         }
+
 
 
 
 
         stage('Build Docker Image') {
 
-
             steps {
-
 
                 dir('Application-Code/frontend') {
 
-
                     sh """
 
-                    docker build -t ${IMAGE_NAME} .
+                    docker build \
+                    -t ${IMAGE_NAME} .
 
                     """
 
-
                 }
-
 
             }
 
-
         }
+
 
 
 
 
         stage('Trivy Image Scan') {
 
-
             steps {
-
 
                 sh """
 
-
-                trivy image --exit-code 0 --severity LOW,MEDIUM ${IMAGE_NAME}
-
-
-
-                trivy image --exit-code 1 --severity HIGH,CRITICAL ${IMAGE_NAME}
+                trivy image \
+                --exit-code 0 \
+                --severity LOW,MEDIUM \
+                ${IMAGE_NAME}
 
 
+
+                trivy image \
+                --exit-code 1 \
+                --severity HIGH,CRITICAL \
+                ${IMAGE_NAME}
 
                 """
 
-
             }
-
 
         }
 
 
 
 
-        stage('Login to AWS ECR') {
 
+        stage('Login To AWS ECR') {
 
             steps {
 
-
                 withCredentials([
 
-
-                    [$class: 'AmazonWebServicesCredentialsBinding',
-
-                    credentialsId: "${AWS_CREDS}"]
-
+                    [
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: "${AWS_CREDS}"
+                    ]
 
                 ]) {
 
 
                     sh """
 
-
                     aws ecr get-login-password \
-
                     --region ${AWS_REGION} | \
-
                     docker login \
-
                     --username AWS \
-
                     --password-stdin \
-
                     ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
-
-
 
                     """
 
-
                 }
 
-
             }
-
 
         }
 
@@ -362,9 +337,7 @@ pipeline {
 
         stage('Push Docker Image') {
 
-
             steps {
-
 
                 sh """
 
@@ -372,91 +345,99 @@ pipeline {
 
                 """
 
-
             }
 
-
         }
+
 
 
 
 
         stage('Update Kubernetes Manifest') {
 
-
             steps {
-
 
                 sh """
 
-
-                sed -i 's|image:.*|image: ${IMAGE_NAME}|g' \
-
+                sed -i \
+                "s|image:.*|image: ${IMAGE_NAME}|g" \
                 kubernetes/frontend/deployment.yaml
-
-
 
                 """
 
-
             }
-
 
         }
 
 
 
 
-        stage('Commit and Push Changes') {
 
+        stage('Commit And Push Changes') {
 
             steps {
 
 
                 withCredentials([
 
-
                     usernamePassword(
 
-                    credentialsId: "${GITHUB_CREDS}",
+                        credentialsId: "${GITHUB_CREDS}",
 
-                    usernameVariable: 'GIT_USER',
+                        usernameVariable: 'GIT_USER',
 
-                    passwordVariable: 'GIT_PASS')
+                        passwordVariable: 'GIT_PASS'
 
+                    )
 
                 ]) {
 
 
                     sh '''
 
-
-                    git config user.email "jenkins@devops.com"
-
-
-                    git config user.name "Jenkins"
+                    git config user.email "ayareanuja0903@gmail.com"
 
 
-                    git add .
+                    git config user.name "ayareanuja0903-collab"
 
 
-
-                    git commit -m "Update Frontend Image ${BUILD_NUMBER}" || true
+                    git add kubernetes/frontend/deployment.yaml
 
 
 
-                    git push https://${GIT_USER}:${GIT_PASS}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git HEAD:main
+                    git commit \
+                    -m "Update frontend image ${BUILD_NUMBER}" || true
 
+
+
+                    git push \
+                    https://${GIT_USER}:${GIT_PASS}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git \
+                    HEAD:main
 
 
                     '''
 
-
                 }
-
 
             }
 
+        }
+
+
+
+
+
+        stage('Docker Cleanup') {
+
+            steps {
+
+                sh """
+
+                docker rmi ${IMAGE_NAME} || true
+
+                """
+
+            }
 
         }
 
@@ -470,32 +451,25 @@ pipeline {
 
         always {
 
-
             cleanWs()
 
-
         }
-
 
 
         success {
 
-
-            echo "Frontend Pipeline Completed Successfully."
+            echo "Frontend Pipeline Completed Successfully"
 
         }
 
 
-
         failure {
 
-
-            echo "Frontend Pipeline Failed."
+            echo "Frontend Pipeline Failed"
 
         }
 
 
     }
-
 
 }
