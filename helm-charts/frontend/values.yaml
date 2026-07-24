@@ -5,7 +5,7 @@ image:
 
   repository: 023465168943.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-frontend
 
-  tag: "31"
+  tag: "33"
 
   pullPolicy: Always
 
