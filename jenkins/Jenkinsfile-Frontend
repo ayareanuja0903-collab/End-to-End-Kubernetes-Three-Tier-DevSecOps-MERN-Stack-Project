@@ -12,6 +12,8 @@ pipeline {
 
     environment {
 
+        NODE_OPTIONS = '--openssl-legacy-provider'
+        
         AWS_REGION = "ap-south-1"
 
         GITHUB_REPO = "https://github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git"
@@ -23,6 +25,7 @@ pipeline {
         AWS_CREDS = "aws-creds"
 
         SONARQUBE_ENV = "SonarQube"
+        
 
     }
 
@@ -77,7 +80,13 @@ pipeline {
 
                 dir('Application-Code/frontend') {
 
-                    sh 'npm run lint || true'
+                    sh '''
+                    if npm run | grep -q lint; then
+                        npm run lint
+                    else
+                        echo "Lint script not configured, skipping"
+                    fi
+                    '''
 
                 }
 
@@ -92,7 +101,7 @@ pipeline {
 
                 dir('Application-Code/frontend') {
 
-                    sh 'npm test -- --watchAll=false || true'
+                    sh 'npm test -- --watchAll=false --passWithNoTests'
 
                 }
 
@@ -102,17 +111,14 @@ pipeline {
 
 
         stage('Build React App') {
-
             steps {
-
                 dir('Application-Code/frontend') {
-
-                    sh 'npm run build'
-
+                    sh '''
+                    export NODE_OPTIONS=--openssl-legacy-provider
+                    npm run build
+                    '''
                 }
-
             }
-
         }
 
 
