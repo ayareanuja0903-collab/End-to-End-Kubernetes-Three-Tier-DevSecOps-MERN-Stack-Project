@@ -1,10 +1,12 @@
-apiVersion: apps/v1
+apiVersion: apps/v1i
 kind: Deployment
 metadata:
   name: mongodb
   namespace: three-tier-app
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
 
   selector:
     matchLabels:
