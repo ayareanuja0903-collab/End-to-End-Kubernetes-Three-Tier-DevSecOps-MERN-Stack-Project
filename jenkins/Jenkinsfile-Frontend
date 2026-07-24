@@ -60,6 +60,8 @@ pipeline {
 
                 dir('Application-Code/frontend') {
 
+                    sh 'node -v'
+                    sh 'npm -v'
                     sh 'npm install'
 
                 }
