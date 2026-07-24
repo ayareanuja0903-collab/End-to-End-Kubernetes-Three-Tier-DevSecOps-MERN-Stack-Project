@@ -213,40 +213,47 @@ pipeline {
         }
 
         stage('Commit And Push Changes') {
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: "${GITHUB_CREDS}",
-                        usernameVariable: 'GIT_USER',
-                        passwordVariable: 'GIT_PASS'
-                    )
-                ]) {
+                steps {
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: "${GITHUB_CREDS}",
+                            usernameVariable: 'GIT_USER',
+                            passwordVariable: 'GIT_PASS'
+                        )
+                    ]) {
 
+                        sh '''
+                            git config user.email "ayareanuja0903@gmail.com"
+                            git config user.name "ayareanuja0903-collab"
+
+                            git add kubernetes/frontend/deployment.yaml
+                            git add helm-charts/frontend/values.yaml
+
+                            # Commit only if changes exist
+                            if git diff --cached --quiet; then
+                                echo "No changes detected. Skipping commit."
+                                exit 0
+                            fi
+
+                            # Prevent Jenkins webhook loop
+                            git commit -m "Update frontend image ${BUILD_NUMBER} [skip ci]"
+
+                            git push \
+                            https://${GIT_USER}:${GIT_PASS}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git \
+                            HEAD:main
+                        '''
+                    }
+                }
+            }
+
+            stage('Docker Cleanup') {
+                steps {
                     sh '''
-                        git config user.email "ayareanuja0903@gmail.com"
-                        git config user.name  "ayareanuja0903-collab"
-
-                        git add kubernetes/frontend/deployment.yaml
-                        git add helm-charts/frontend/values.yaml
-
-                        git commit -m "Update frontend image ${BUILD_NUMBER}" || true
-
-                        git push \
-                          https://${GIT_USER}:${GIT_PASS}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git \
-                          HEAD:main
+                        docker rmi ${IMAGE_NAME} || true
                     '''
                 }
             }
         }
-
-        stage('Docker Cleanup') {
-            steps {
-                sh '''
-                    docker rmi ${IMAGE_NAME} || true
-                '''
-            }
-        }
-    }
 
     post {
 
