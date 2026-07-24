@@ -27,7 +27,7 @@ spec:
 
       - name: frontend
 
-        image: 023465168943.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-frontend:33
+        image: 023465168943.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-frontend:35
           repository: 023465168943.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-frontend
           tag: initial
 
