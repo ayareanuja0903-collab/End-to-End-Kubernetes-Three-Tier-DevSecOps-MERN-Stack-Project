@@ -157,15 +157,14 @@ pipeline {
 
                     withSonarQubeEnv("${SONARQUBE_ENV}") {
 
-                        sh '''
-
-                        sonar-scanner \
-                        -Dsonar.projectKey=frontend \
-                        -Dsonar.projectName=three-tier-frontend \
-                        -Dsonar.sources=. \
-                        -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-
-                        '''
+                         sh '''
+                         
+                         sonar-scanner \
+                         -Dsonar.projectKey=frontend \
+                         -Dsonar.projectName=three-tier-frontend \
+                         -Dsonar.sources=.
+                        
+                         '''
 
                     }
 
