@@ -358,19 +358,21 @@ pipeline {
 
                 sh """
 
-                sed -i \
-                "s|image:.*|image: ${IMAGE_NAME}|g" \
-                kubernetes/frontend/deployment.yaml
-
+                sed -i 's|image:.*|image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}|g' kubernetes/frontend/deployment.yaml
+                
                 """
 
             }
 
         }
 
-
-
-
+	stage('Update Helm Values') {
+	    steps {
+        	sh """
+                sed -i 's/^  tag:.*/  tag: "${BUILD_NUMBER}"/' helm-charts/frontend/values.yaml
+       		 """
+   	    }
+	}
 
         stage('Commit And Push Changes') {
 
