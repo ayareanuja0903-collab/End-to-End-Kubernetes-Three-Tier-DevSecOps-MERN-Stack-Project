@@ -7,31 +7,36 @@ metadata:
 
 spec:
 
-  replicas: 2
+  replicas: {{ .Values.replicaCount }}
 
   selector:
     matchLabels:
       app: frontend
 
+
   template:
 
     metadata:
+
       labels:
         app: frontend
+
 
     spec:
 
       serviceAccountName: three-tier-sa
 
+
       containers:
 
       - name: frontend
 
-        image: 023465168943.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-frontend
-        repository: 023465168943.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-frontend
-        tag: initial
 
-        imagePullPolicy: Always
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+
+
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+
 
         ports:
 
@@ -51,20 +56,22 @@ spec:
               key: BACKEND_URL
 
 
+
         resources:
 
           requests:
 
-            cpu: "100m"
+            cpu: {{ .Values.resources.requests.cpu }}
 
-            memory: "128Mi"
+            memory: {{ .Values.resources.requests.memory }
 
 
           limits:
 
-            cpu: "300m"
+            cpu: {{ .Values.resources.limits.cpu }}
 
-            memory: "256Mi"
+            memory: {{ .Values.resources.limits.memory }}
+
 
 
         readinessProbe:

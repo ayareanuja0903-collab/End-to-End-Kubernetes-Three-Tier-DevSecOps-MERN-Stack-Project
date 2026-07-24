@@ -1,39 +1,29 @@
 replicaCount: 2
 
-
 image:
-
   repository: 023465168943.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-frontend
-
   tag: "initial"
-
   pullPolicy: Always
 
 
-
 service:
-
-  type: ClusterIP
-
+  type: LoadBalancer
   port: 80
-
 
 
 resources:
 
   requests:
-
-    cpu: 100m
-
-    memory: 128Mi
-
+    cpu: "100m"
+    memory: "128Mi"
 
   limits:
+    cpu: "300m"
+    memory: "256Mi"
 
-    cpu: 300m
 
-    memory: 256Mi
-
+env:
+  REACT_APP_API_URL: ""
 
 
 hpa:
