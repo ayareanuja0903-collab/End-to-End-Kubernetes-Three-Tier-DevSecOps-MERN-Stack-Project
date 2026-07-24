@@ -2,7 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: three-tier-role
-  namespace: three-tier
+  namespace: three-tier-app
 
 rules:
 

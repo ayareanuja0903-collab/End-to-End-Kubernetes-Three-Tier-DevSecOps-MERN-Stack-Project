@@ -21,7 +21,7 @@ env:
 
   PORT: "5000"
 
-  MONGO_CONN_STR: mongodb://mongodb-service:27017/three-tier-app
+  MONGO_CONN_STR: mongodb://admin:admin123@mongodb-service:27017/three-tier-app?authSource=admin
 
   USE_DB_AUTH: "false"
 
