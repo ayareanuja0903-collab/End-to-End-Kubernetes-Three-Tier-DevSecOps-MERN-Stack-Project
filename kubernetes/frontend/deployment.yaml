@@ -27,7 +27,7 @@ spec:
 
       - name: frontend
 
-        image: 023465168943.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-frontend:21
+        image: 023465168943.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-frontend:22
 
         imagePullPolicy: Always
 
