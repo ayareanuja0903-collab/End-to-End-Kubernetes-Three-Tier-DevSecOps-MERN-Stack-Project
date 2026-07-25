@@ -42,6 +42,55 @@ pipeline {
             }
         }
 
+        stage('Sync Repository') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: "${GITHUB_CREDS}",
+                        usernameVariable: 'GIT_USER',
+                        passwordVariable: 'GIT_PASS'
+                    )
+                ]) {
+
+                    sh '''
+                        git config user.email "ayareanuja0903@gmail.com"
+                        git config user.name "ayareanuja0903-collab"
+
+                        git fetch origin
+
+                        git checkout main
+
+                        git reset --hard origin/main
+                    '''
+                }
+            }
+        }
+
+        stage('Skip CI Check') {
+            steps {
+                script {
+
+                    def commitMsg = sh(
+                        script: "git log -1 --pretty=%B",
+                        returnStdout: true
+                    ).trim()
+
+                    def commitAuthor = sh(
+                        script: "git log -1 --pretty=format:'%an'",
+                        returnStdout: true
+                    ).trim()
+
+                    if (commitMsg.contains('[skip ci]') ||
+                        commitAuthor == 'Jenkins CI') {
+
+                        currentBuild.result = 'NOT_BUILT'
+
+                        error('Skipping Jenkins auto commit')
+                    }
+                }
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 dir('Application-Code/frontend') {
@@ -148,11 +197,16 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+       stage('Build Docker Image') {
             steps {
                 dir('Application-Code/frontend') {
                     sh '''
-                        docker build -t ${IMAGE_NAME} .
+                        docker system prune -af || true
+
+                        docker build \
+                        --pull \
+                        --no-cache \
+                        -t ${IMAGE_NAME} .
                     '''
                 }
             }
@@ -203,24 +257,22 @@ pipeline {
             }
         }
 
-        stage('Update Kubernetes Manifest') {
-            steps {
-                sh '''
-                    sed -i "s|image:.*|image: ${IMAGE_NAME}|g" kubernetes/frontend/deployment.yaml
-                '''
-            }
-        }
 
         stage('Update Helm Values') {
             steps {
-                sh '''
-                    sed -i "s|tag:.*|tag: \\"${BUILD_NUMBER}\\"|g" helm-charts/frontend/values.yaml
-                '''
+
+                sh """
+                    sed -i 's|repository:.*|repository: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}|g' helm-charts/frontend/values.yaml
+
+                    sed -i 's|tag:.*|tag: "${BUILD_NUMBER}"|g' helm-charts/frontend/values.yaml
+                """
             }
         }
 
         stage('Commit And Push Changes') {
+
             steps {
+
                 withCredentials([
                     usernamePassword(
                         credentialsId: "${GITHUB_CREDS}",
@@ -230,17 +282,27 @@ pipeline {
                 ]) {
 
                     sh '''
-                        git config user.email "ayareanuja0903@gmail.com"
-                        git config user.name  "ayareanuja0903-collab"
 
-                        git add kubernetes/frontend/deployment.yaml
+                        git config user.email "ayareanuja0903@gmail.com"
+                        git config user.name "ayareanuja0903-collab"
+
+                        git fetch origin
+
+                        git checkout main
+
+                        git reset --hard origin/main
+
+                        sed -i 's|tag:.*|tag: "'"${BUILD_NUMBER}"'"|g' helm-charts/frontend/values.yaml
+
                         git add helm-charts/frontend/values.yaml
 
-                        git commit -m "Update frontend image ${BUILD_NUMBER}" || true
+                        git diff --cached --quiet || \
+                        git commit -m "Frontend Image ${BUILD_NUMBER} [skip ci]"
 
-                        git push \
-                          https://${GIT_USER}:${GIT_PASS}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git \
-                          HEAD:main
+                        git pull --rebase https://${GIT_USER}:${GIT_PASS}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git main
+
+                        git push https://${GIT_USER}:${GIT_PASS}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git HEAD:main
+
                     '''
                 }
             }
