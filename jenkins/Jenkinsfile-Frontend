@@ -110,7 +110,7 @@ pipeline {
             }
         }
 
-        stage('Quality Gate') {
+       stage('Quality Gate') {
             steps {
                 timeout(time: 15, unit: 'MINUTES') {
                     script {
@@ -152,7 +152,7 @@ pipeline {
             steps {
                 dir('Application-Code/frontend') {
                     sh '''
-                        docker build --no-cache -t ${IMAGE_NAME} .
+                        docker build -t ${IMAGE_NAME} .
                     '''
                 }
             }
@@ -231,23 +231,16 @@ pipeline {
 
                     sh '''
                         git config user.email "ayareanuja0903@gmail.com"
-                        git config user.name "ayareanuja0903-collab"
+                        git config user.name  "ayareanuja0903-collab"
 
                         git add kubernetes/frontend/deployment.yaml
                         git add helm-charts/frontend/values.yaml
 
-                        # Commit only if changes exist
-                        if git diff --cached --quiet; then
-                            echo "No changes detected. Skipping commit."
-                            exit 0
-                        fi
-
-                        # Prevent Jenkins webhook loops
-                        git commit -m "Update frontend image ${BUILD_NUMBER} [skip ci]"
+                        git commit -m "Update frontend image ${BUILD_NUMBER}" || true
 
                         git push \
-                        https://${GIT_USER}:${GIT_PASS}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git \
-                        HEAD:main
+                          https://${GIT_USER}:${GIT_PASS}@github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git \
+                          HEAD:main
                     '''
                 }
             }
@@ -277,5 +270,3 @@ pipeline {
         }
     }
 }
-
-
