@@ -2,7 +2,7 @@ replicaCount: 5
 
 image:
   repository: 023465168943.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-frontend
-  tag: "66"
+  tag: "68"
   pullPolicy: Always
 
 
