@@ -1,8 +1,8 @@
-replicaCount: 5
+replicaCount: 2
 
 image:
   repository: 023465168943.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-frontend
-  tag: "68"
+  tag: "latest"
   pullPolicy: Always
 
 
@@ -12,7 +12,6 @@ service:
 
 
 resources:
-
   requests:
     cpu: "100m"
     memory: "128Mi"
@@ -27,7 +26,6 @@ env:
 
 
 hpa:
-
   enabled: true
 
   minReplicas: 2

@@ -1,48 +1,43 @@
 replicaCount: 5
 
-
 image:
   repository: 023465168943.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-backend
   tag: latest
   pullPolicy: Always
 
-
 service:
   type: ClusterIP
   port: 5000
 
-
 containerPort: 5000
 
+config:
+  nodeEnv: production
+  mongoHost: mongodb-service
+  mongoPort: "27017"
+  backendUrl: "http://backend-service:5000"
 
 env:
-
-  NODE_ENV: production
-
   PORT: "5000"
-
-  MONGO_CONN_STR: mongodb://admin:admin123@mongodb-service:27017/three-tier-app?authSource=admin
-
+  MONGO_CONN_STR: "mongodb://admin:admin123@mongodb-service:27017/three-tier-app?authSource=admin"
   USE_DB_AUTH: "false"
 
-
 resources:
-
   requests:
     cpu: 200m
     memory: 256Mi
-
   limits:
     cpu: 500m
     memory: 512Mi
 
-
 hpa:
-
   enabled: true
-
   minReplicas: 2
-
   maxReplicas: 6
-
   cpuUtilization: 70
+
+secret:
+  mongoUsername: admin
+  mongoPassword: admin123
+  mongoDatabase: three-tier-app
+

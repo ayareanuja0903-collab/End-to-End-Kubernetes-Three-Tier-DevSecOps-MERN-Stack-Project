@@ -3,81 +3,94 @@ kind: Deployment
 
 metadata:
   name: {{ include "backend.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
-    app: backend
-
+    app.kubernetes.io/name: {{ include "backend.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 
 spec:
-
   replicas: {{ .Values.replicaCount }}
 
-
   selector:
-
     matchLabels:
-      app: backend
-
+      app.kubernetes.io/name: {{ include "backend.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
 
   template:
-
     metadata:
-
       labels:
-        app: backend
-
+        app.kubernetes.io/name: {{ include "backend.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
 
     spec:
-
-      serviceAccountName: three-tier-sa
-
+      serviceAccountName: {{ include "backend.fullname" . }}
 
       containers:
+        - name: backend
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
 
-      - name: backend
+          ports:
+            - containerPort: {{ .Values.containerPort }}
 
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: NODE_ENV
 
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+            - name: PORT
+              value: {{ .Values.env.PORT | quote }}
 
+            - name: MONGO_CONN_STR
+              value: {{ .Values.env.MONGO_CONN_STR | quote }}
 
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
+            - name: USE_DB_AUTH
+              value: {{ .Values.env.USE_DB_AUTH | quote }}
 
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: MONGO_USERNAME
 
-        ports:
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: MONGO_PASSWORD
 
-        - containerPort: {{ .Values.containerPort }}
+            - name: MONGO_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: MONGO_DATABASE
 
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu | quote }}
+              memory: {{ .Values.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu | quote }}
+              memory: {{ .Values.resources.limits.memory | quote }}
 
-        env:
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.containerPort }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
 
-
-        - name: NODE_ENV
-          value: "{{ .Values.env.NODE_ENV }}"
-
-
-        - name: PORT
-          value: "{{ .Values.env.PORT }}"
-
-
-        - name: MONGO_CONN_STR
-          value: "{{ .Values.env.MONGO_CONN_STR }}"
-
-
-        - name: USE_DB_AUTH
-          value: "{{ .Values.env.USE_DB_AUTH }}"
-
-
-        resources:
-
-
-          requests:
-
-            cpu: "{{ .Values.resources.requests.cpu }}"
-
-            memory: "{{ .Values.resources.requests.memory }}"
-
-
-          limits:
-
-            cpu: "{{ .Values.resources.limits.cpu }}"
-
-            memory: "{{ .Values.resources.limits.memory }}"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.containerPort }}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
