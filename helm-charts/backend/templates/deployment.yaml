@@ -77,20 +77,20 @@ spec:
               cpu: {{ .Values.resources.limits.cpu | quote }}
               memory: {{ .Values.resources.limits.memory | quote }}
 
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: {{ .Values.containerPort }}
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
+            livenessProbe:
+               httpGet:
+                 path: /healthz
+                 port: 5000
+               initialDelaySeconds: 15
+               periodSeconds: 20
+               timeoutSeconds: 5
+               failureThreshold: 3
 
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: {{ .Values.containerPort }}
-            initialDelaySeconds: 15
-            periodSeconds: 20
-            timeoutSeconds: 5
-            failureThreshold: 3
+            readinessProbe:
+               httpGet:
+                  path: /ready
+                  port: 5000
+               initialDelaySeconds: 10
+               periodSeconds: 10
+               timeoutSeconds: 5
+               failureThreshold: 3
