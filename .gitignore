@@ -67,3 +67,5 @@ Ansible/playbooks/*.zip
 kubectl
 trivy
 awscliv2.zip
+iam_policy.json
+*.tar.gz
