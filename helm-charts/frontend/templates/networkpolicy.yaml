@@ -1,0 +1,74 @@
+apiVersion: networking.k8s.io/v1
+
+kind: NetworkPolicy
+
+
+metadata:
+
+  name: frontend-policy
+
+  namespace: three-tier-app
+
+
+
+spec:
+
+  podSelector:
+
+    matchLabels:
+
+      app: frontend
+
+
+
+  policyTypes:
+
+  - Ingress
+
+  - Egress
+
+
+
+  ingress:
+
+
+  # Allow traffic from ALB Controller
+
+  - from:
+
+    - namespaceSelector: {}
+
+
+
+  egress:
+
+
+  # Allow frontend to communicate with backend only
+
+  - to:
+
+    - podSelector:
+
+        matchLabels:
+
+          app: backend
+
+    ports:
+
+    - protocol: TCP
+
+      port: 5000
+
+
+
+  # Allow DNS
+
+  - to:
+
+    - namespaceSelector: {}
+
+    ports:
+
+    - protocol: UDP
+
+      port: 53
