@@ -136,7 +136,7 @@ module "alb_controller" {
 
   cluster_oidc_provider_arn = module.eks.oidc_provider_arn
 
-  cluster_oidc_issuer_url = module.eks.oidc_provider
+  cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
 
   vpc_id = module.vpc.vpc_id
 
