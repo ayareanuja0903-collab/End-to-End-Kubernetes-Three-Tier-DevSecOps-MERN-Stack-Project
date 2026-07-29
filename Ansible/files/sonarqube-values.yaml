@@ -4,7 +4,7 @@ community:
 monitoringPasscode: "sonar123"
 
 service:
-  type: LoadBalancer
+  type: ClusterIP
 
 persistence:
   enabled: true

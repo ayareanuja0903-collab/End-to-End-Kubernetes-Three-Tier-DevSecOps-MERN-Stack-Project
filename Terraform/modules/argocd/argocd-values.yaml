@@ -3,7 +3,8 @@ global:
 
 server:
   service:
-    type: LoadBalancer
+    type: ClusterIP
+    annotations: {}
 
   ingress:
     enabled: false
