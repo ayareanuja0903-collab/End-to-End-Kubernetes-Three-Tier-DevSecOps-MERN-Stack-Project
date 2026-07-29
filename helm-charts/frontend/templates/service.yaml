@@ -6,10 +6,13 @@ kind: Service
 metadata:
 
   name: frontend-service
-
+  namespace: argocd
 
 
 spec:
+
+  type: ExternalName
+  externalName: frontend-service.three-tier-app.svc.cluster.local
 
 
   selector:

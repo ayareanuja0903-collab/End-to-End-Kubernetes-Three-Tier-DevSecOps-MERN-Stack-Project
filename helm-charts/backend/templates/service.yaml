@@ -3,13 +3,14 @@ kind: Service
 
 metadata:
   name: backend-service
-  namespace: {{ .Release.Namespace }}
+  namespace: argocd
   labels:
     app.kubernetes.io/name: {{ include "backend.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 
 spec:
-  type: {{ .Values.service.type }}
+  type: ExternalName
+  externalName: backend-service.three-tier-app.svc.cluster.local
 
   selector:
     app.kubernetes.io/name: {{ include "backend.name" . }}
