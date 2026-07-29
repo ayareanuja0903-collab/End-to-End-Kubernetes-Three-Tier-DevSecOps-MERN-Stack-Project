@@ -14,50 +14,11 @@ resource "kubernetes_service_account" "aws_load_balancer_controller" {
     namespace = var.namespace
 
     annotations = {
-    
-        "eks.amazonaws.com/role-arn" = module.alb_controller_irsa_role.iam_role_arn
+      "eks.amazonaws.com/role-arn" = module.alb_controller_irsa_role.iam_role_arn
     }
   }
 
   depends_on = [
-    aws_iam_role.alb_controller
+    module.alb_controller_irsa_role
   ]
-}
-
-resource "helm_release" "aws_load_balancer_controller" {
-  name       = "aws-load-balancer-controller"
-  repository = "https://aws.github.io/eks-charts"
-  chart      = "aws-load-balancer-controller"
-  version    = var.chart_version
-
-  namespace = var.namespace
-
-  depends_on = [
-    kubernetes_service_account.aws_load_balancer_controller
-  ]
-
-  set {
-    name  = "clusterName"
-    value = var.cluster_name
-  }
-
-  set {
-    name  = "region"
-    value = var.region
-  }
-
-  set {
-    name  = "vpcId"
-    value = var.vpc_id
-  }
-
-  set {
-    name  = "serviceAccount.create"
-    value = "false"
-  }
-
-  set {
-    name  = "serviceAccount.name"
-    value = var.service_account_name
-  }
 }
