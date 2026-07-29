@@ -194,7 +194,7 @@ module "addons" {
   source = "./modules/addons"
 
   cluster_name = module.eks.cluster_name
-  region        = var.aws_region
+  region       = var.aws_region
 
   depends_on = [
     module.eks,
