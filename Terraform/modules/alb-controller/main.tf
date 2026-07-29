@@ -2,12 +2,6 @@ locals {
   name = "aws-load-balancer-controller"
 }
 
-resource "kubernetes_namespace" "kube_system" {
-  metadata {
-    name = var.namespace
-  }
-}
-
 resource "kubernetes_service_account" "aws_load_balancer_controller" {
   metadata {
     name      = var.service_account_name
