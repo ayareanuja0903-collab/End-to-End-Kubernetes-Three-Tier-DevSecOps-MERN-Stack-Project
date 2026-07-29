@@ -1,36 +1,18 @@
-locals {
-  name = "aws-load-balancer-controller"
-}
-
-resource "kubernetes_namespace" "kube_system" {
-  metadata {
-    name = var.namespace
-  }
-}
-
-resource "kubernetes_service_account" "aws_load_balancer_controller" {
-  metadata {
-    name      = var.service_account_name
-    namespace = var.namespace
-
-    annotations = {
-    
-        "eks.amazonaws.com/role-arn" = module.alb_controller_irsa_role.iam_role_arn
-    }
-  }
-
-  depends_on = [
-    aws_iam_role.alb_controller
-  ]
-}
+################################################################################
+# AWS Load Balancer Controller Helm Chart
+################################################################################
 
 resource "helm_release" "aws_load_balancer_controller" {
-  name       = "aws-load-balancer-controller"
-  repository = "https://aws.github.io/eks-charts"
-  chart      = "aws-load-balancer-controller"
-  version    = var.chart_version
 
-  namespace = var.namespace
+  name       = "aws-load-balancer-controller"
+
+  repository = "https://aws.github.io/eks-charts"
+
+  chart      = "aws-load-balancer-controller"
+
+  namespace  = var.namespace
+
+  version    = var.chart_version
 
   depends_on = [
     kubernetes_service_account.aws_load_balancer_controller
@@ -60,4 +42,15 @@ resource "helm_release" "aws_load_balancer_controller" {
     name  = "serviceAccount.name"
     value = var.service_account_name
   }
+
+  set {
+    name  = "enableServiceMutatorWebhook"
+    value = "true"
+  }
+
+  set {
+    name  = "replicaCount"
+    value = "2"
+  }
+
 }
