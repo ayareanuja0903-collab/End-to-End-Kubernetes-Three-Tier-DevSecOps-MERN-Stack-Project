@@ -9,6 +9,8 @@ metadata:
     alb.ingress.kubernetes.io/group.name: three-tier-platform
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
 
 spec:
   ingressClassName: alb
