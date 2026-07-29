@@ -3,20 +3,24 @@ kind: Service
 
 metadata:
   name: backend-service
-  namespace: argocd
+  namespace: {{ .Release.Namespace }}
+
   labels:
     app.kubernetes.io/name: {{ include "backend.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 
+
 spec:
-  type: ExternalName
-  externalName: backend-service.three-tier-app.svc.cluster.local
+
+  type: ClusterIP
 
   selector:
     app.kubernetes.io/name: {{ include "backend.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 
+
   ports:
+
     - protocol: TCP
-      port: {{ .Values.service.port }}
-      targetPort: {{ .Values.containerPort }}
+      port: 5000
+      targetPort: 5000
