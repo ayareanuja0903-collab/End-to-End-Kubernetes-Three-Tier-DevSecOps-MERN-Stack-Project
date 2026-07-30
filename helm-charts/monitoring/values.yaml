@@ -18,17 +18,35 @@ grafana:
       serve_from_sub_path: true
 
 prometheus:
-  service:
-    type: ClusterIP
+  enabled: true
 
   prometheusSpec:
-    externalUrl: http://k8s-threetierplatform-f4444af35c-1645984444.ap-south-1.elb.amazonaws.com/prometheus
-    routePrefix: /
+    retention: 15d
+
+    scrapeInterval: 30s
+
+    evaluationInterval: 30s
+
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp2
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 20Gi
 
 alertmanager:
-  service:
-    type: ClusterIP
+  enabled: true
 
   alertmanagerSpec:
-    externalUrl: http://k8s-threetierplatform-f4444af35c-1645984444.ap-south-1.elb.amazonaws.com/alertmanager
-    routePrefix: /
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp2
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 5Gi
