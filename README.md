@@ -13,26 +13,123 @@
 
 ## Project Overview
 
+<p align="center">
+  <img src="images/architecture.png" alt="Project Architecture" width="100%">
+</p>
+
+
 Designed and implemented a complete **Three-Tier MERN Stack application deployment** on **Amazon Web Services (AWS)** using modern **DevSecOps** practices. The project automates infrastructure provisioning, CI/CD, GitOps deployment, security scanning, and monitoring for a production-ready Kubernetes environment.
 
 The application consists of a **React frontend**, **Node.js/Express backend**, and **MongoDB database**, deployed on **Amazon EKS** with automated delivery using **Jenkins** and **ArgoCD**. Infrastructure is provisioned using **Terraform**, servers are configured using **Ansible**, and continuous security scanning is integrated through **SonarQube**, **OWASP Dependency Check**, and **Trivy**.
 
 ---
-
-# Architecture
-
 ```
-                      Users
-                         │
-                  AWS Load Balancer
-                         │
-                 React Frontend (UI)
-                         │
-                Node.js / Express API
-                         │
-                  MongoDB Database
-                         │
-              Kubernetes Cluster (AWS EKS)
+
+
+                                        END-TO-END DEVSECOPS PROJECT
+
++----------------+
+|   Developer    |
++----------------+
+        |
+        | 1. Push Code
+        ▼
++-----------------------+
+|   GitHub Repository   |
+|  (Frontend/Backend)   |
++-----------------------+
+        |
+        | GitHub Webhook
+        ▼
++-----------------------+
+|       Jenkins         |
+|      CI Pipeline      |
++-----------------------+
+        |
+        ├───────────────────────────────────────────────────────────────────────┐
+        |                                                                       |
+        ▼                                                                       ▼
++----------------+                                                    +----------------+
+| npm install    |                                                    | ESLint         |
++----------------+                                                    +----------------+
+        |                                                                       |
+        └───────────────────────────────┬───────────────────────────────────────┘
+                                        ▼
+                               +----------------+
+                               | SonarQube Scan |
+                               +----------------+
+                                        |
+                                        ▼
+                               +----------------+
+                               | Quality Gate   |
+                               +----------------+
+                                        |
+                                        ▼
+                               +----------------+
+                               | Docker Build   |
+                               +----------------+
+                                        |
+                                        ▼
+                               +----------------+
+                               | Trivy Scan     |
+                               +----------------+
+                                        |
+                                        ▼
+                               +----------------+
+                               | Amazon ECR     |
+                               | Docker Images  |
+                               +----------------+
+                                        |
+                                        ▼
+                         GitOps (Update Kubernetes Manifests)
+                                        |
+                                        ▼
+                               +----------------+
+                               | GitHub (GitOps)|
+                               +----------------+
+                                        |
+                                        ▼
+                               +----------------+
+                               |    Argo CD     |
+                               +----------------+
+                                        |
+                           Automatic Sync to Kubernetes
+                                        |
+                                        ▼
+======================================================================================
+                          AWS EKS (Kubernetes Cluster)
+======================================================================================
+
+                         +---------------------------+
+                         |        Ingress (ALB)      |
+                         | AWS Load Balancer Ctrl    |
+                         +-------------+-------------+
+                                       |
+                     +-----------------+------------------+
+                     |                                    |
+                     ▼                                    ▼
+            +----------------+                  +----------------+
+            | Frontend Pods  | ----API------->  | Backend Pods   |
+            | React          |                  | Node.js/Express|
+            +----------------+                  +--------+-------+
+                                                          |
+                                                          |
+                                                          ▼
+                                               +--------------------+
+                                               | MongoDB StatefulSet|
+                                               | PVC / EBS Volume   |
+                                               +--------------------+
+
+======================================================================================
+                             Monitoring & Security
+======================================================================================
+
+Prometheus  ─────────────► Collect Metrics
+       │
+       ▼
+Grafana ────────────────► Dashboards
+
+Prometheus Alertmanager ─► Email / Slack Alerts (CPU, Memory, Pod Failure)
 ```
 
 ---
