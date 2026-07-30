@@ -1,15 +1,34 @@
 grafana:
+  enabled: true
+
+  adminUser: admin
+  adminPassword: Admin@123
+
+  service:
+    type: ClusterIP
+
+  persistence:
+    enabled: true
+    storageClassName: gp2
+    size: 10Gi
+
   grafana.ini:
     server:
       root_url: "%(protocol)s://%(domain)s/grafana/"
       serve_from_sub_path: true
 
 prometheus:
+  service:
+    type: ClusterIP
+
   prometheusSpec:
     externalUrl: http://k8s-threetierplatform-f4444af35c-1645984444.ap-south-1.elb.amazonaws.com/prometheus
     routePrefix: /
 
 alertmanager:
+  service:
+    type: ClusterIP
+
   alertmanagerSpec:
     externalUrl: http://k8s-threetierplatform-f4444af35c-1645984444.ap-south-1.elb.amazonaws.com/alertmanager
     routePrefix: /
