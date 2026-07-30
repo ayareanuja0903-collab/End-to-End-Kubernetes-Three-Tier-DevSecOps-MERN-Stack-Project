@@ -276,15 +276,15 @@ resource "null_resource" "prepare_keys_directory" {
     ]
 
     command = <<EOT
+
 New-Item -ItemType Directory -Force "${path.root}/keys"
-icacls "${path.root}/keys" /inheritance:e
+
+icacls "${path.root}/keys" /inheritance:r
+
 icacls "${path.root}/keys" /grant:r "$($env:USERNAME):(F)"
+
 EOT
 
-  }
-
-  triggers = {
-    key_path = "${path.root}/keys"
   }
 
 }
@@ -296,7 +296,6 @@ resource "local_file" "jenkins_private_key" {
 
   content = tls_private_key.jenkins.private_key_pem
 
-  file_permission = "0600"
 
   depends_on = [
     null_resource.prepare_keys_directory
@@ -304,6 +303,29 @@ resource "local_file" "jenkins_private_key" {
 
 }
 
+
+resource "null_resource" "secure_jenkins_private_key" {
+
+  provisioner "local-exec" {
+
+    interpreter = [
+      "PowerShell",
+      "-Command"
+    ]
+
+    command = <<EOT
+icacls "${path.root}/keys/jenkins-key.pem" /reset
+icacls "${path.root}/keys/jenkins-key.pem" /inheritance:r
+icacls "${path.root}/keys/jenkins-key.pem" /grant:r "$($env:USERNAME):(R)"
+EOT
+
+  }
+
+  depends_on = [
+    local_file.jenkins_private_key
+  ]
+
+}
 
 ###########################################################
 # Jenkins EC2 Instance
