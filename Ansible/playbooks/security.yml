@@ -3,13 +3,42 @@
   hosts: all
   become: yes
 
+  vars:
+    aws_region: ap-south-1
+    cluster_name: three-tier-dev-eks
+    kubeconfig_path: /home/ubuntu/.kube/config
+
   environment:
     KUBECONFIG: /home/ubuntu/.kube/config
+    AWS_DEFAULT_REGION: ap-south-1
 
   tasks:
 
     # -------------------------
-    # Trivy Installation
+    # Configure EKS kubeconfig
+    # -------------------------
+
+    - name: Update EKS kubeconfig
+      shell: |
+        aws eks update-kubeconfig \
+        --region {{ aws_region }} \
+        --name {{ cluster_name }}
+      become_user: ubuntu
+
+
+    - name: Verify Kubernetes connection
+      command: kubectl get nodes
+      register: kubernetes_nodes
+      changed_when: false
+
+
+    - name: Display Kubernetes nodes
+      debug:
+        var: kubernetes_nodes.stdout_lines
+
+
+    # -------------------------
+    # Install Required Packages
     # -------------------------
 
     - name: Install required packages
@@ -22,20 +51,17 @@
         state: present
         update_cache: yes
 
+
+    # -------------------------
+    # Install Trivy
+    # -------------------------
+
     - name: Install Trivy
       shell: |
         curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
       args:
         creates: /usr/local/bin/trivy
 
-    - name: Add SonarQube Helm repository
-      command: helm repo add sonarqube https://SonarSource.github.io/helm-chart-sonarqube
-      register: sonar_repo
-      changed_when: "'has been added' in sonar_repo.stdout or 'already exists' not in sonar_repo.stderr"
-      failed_when: false
-
-    - name: Update Helm repositories
-      command: helm repo update
 
     # -------------------------
     # SonarScanner Installation
@@ -46,12 +72,14 @@
         url: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-7.3.0.5189-linux-x64.zip
         dest: /tmp/sonar-scanner.zip
 
+
     - name: Extract SonarScanner
       unarchive:
         src: /tmp/sonar-scanner.zip
         dest: /opt
         remote_src: yes
         creates: /opt/sonar-scanner-7.3.0.5189-linux-x64
+
 
     - name: Create SonarScanner symlink
       file:
@@ -61,19 +89,25 @@
 
 
     # -------------------------
-    # SonarQube Server
+    # SonarQube Helm Setup
     # -------------------------
 
-    - name: Add SonarQube Helm Repository
+    - name: Add SonarQube Helm repository
       command: >
         helm repo add sonarqube
         https://SonarSource.github.io/helm-chart-sonarqube
       register: sonar_repo
-      changed_when: "'already exists' not in sonar_repo.stdout"
+      failed_when: false
+      changed_when: false
+
 
     - name: Update Helm repositories
       command: helm repo update
 
+
+    # -------------------------
+    # SonarQube Deployment
+    # -------------------------
 
     - name: Create SonarQube namespace
       command: kubectl create namespace sonarqube
@@ -88,17 +122,26 @@
         sonarqube/sonarqube
         --namespace sonarqube
         --create-namespace
-        -f "{{ playbook_dir }}/../files/sonarqube-values.yaml"
+        -f {{ playbook_dir }}/../files/sonarqube-values.yaml
 
+
+    # -------------------------
+    # Expose SonarQube
+    # -------------------------
 
     - name: Expose SonarQube Service
       command: >
         kubectl patch svc sonarqube-sonarqube
         -n sonarqube
         -p '{"spec":{"type":"LoadBalancer"}}'
+      failed_when: false
 
 
-    - name: Verify SonarQube
+    # -------------------------
+    # Verification
+    # -------------------------
+
+    - name: Wait for SonarQube pods
       command: kubectl get pods -n sonarqube
       register: sonar_status
       changed_when: false
@@ -106,4 +149,4 @@
 
     - name: Display SonarQube Status
       debug:
-        msg: "{{ sonar_status.stdout }}"
+        var: sonar_status.stdout
