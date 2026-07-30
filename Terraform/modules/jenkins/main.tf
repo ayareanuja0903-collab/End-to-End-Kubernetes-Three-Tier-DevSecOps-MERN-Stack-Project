@@ -249,18 +249,59 @@ resource "aws_security_group" "jenkins" {
 ###########################################################
 
 resource "tls_private_key" "jenkins" {
+
   algorithm = "RSA"
-  rsa_bits  = 4096
+
+  rsa_bits = 4096
+
 }
+
 
 resource "aws_key_pair" "jenkins" {
-  key_name   = "${var.project_name}-${var.environment}-jenkins-key"
+
+  key_name = "${var.project_name}-${var.environment}-jenkins-key"
+
   public_key = tls_private_key.jenkins.public_key_openssh
+
 }
 
+
+resource "null_resource" "prepare_keys_directory" {
+
+  provisioner "local-exec" {
+
+    interpreter = [
+      "PowerShell",
+      "-Command"
+    ]
+
+    command = <<EOT
+New-Item -ItemType Directory -Force "${path.root}/keys"
+icacls "${path.root}/keys" /inheritance:e
+icacls "${path.root}/keys" /grant:r "$($env:USERNAME):(F)"
+EOT
+
+  }
+
+  triggers = {
+    key_path = "${path.root}/keys"
+  }
+
+}
+
+
 resource "local_file" "jenkins_private_key" {
-  content  = tls_private_key.jenkins.private_key_pem
+
   filename = "${path.root}/keys/jenkins-key.pem"
+
+  content = tls_private_key.jenkins.private_key_pem
+
+  file_permission = "0600"
+
+  depends_on = [
+    null_resource.prepare_keys_directory
+  ]
+
 }
 
 

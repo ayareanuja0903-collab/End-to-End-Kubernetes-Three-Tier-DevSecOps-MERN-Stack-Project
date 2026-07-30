@@ -173,10 +173,12 @@ module "argocd" {
   namespace = "argocd"
 
   depends_on = [
+    module.alb_controller,
     module.eks,
     null_resource.helm_repo_update
   ]
 }
+
 
 module "monitoring" {
   source = "./modules/monitoring"
@@ -185,10 +187,12 @@ module "monitoring" {
   namespace    = "monitoring"
 
   depends_on = [
+    module.alb_controller,
     module.eks,
     null_resource.helm_repo_update
   ]
 }
+
 
 module "addons" {
   source = "./modules/addons"
@@ -200,21 +204,4 @@ module "addons" {
     module.eks,
     null_resource.helm_repo_update
   ]
-}
-
-resource "null_resource" "fix_pem_permissions" {
-
-  provisioner "local-exec" {
-    interpreter = ["PowerShell", "-Command"]
-
-    command = <<EOT
-icacls "${path.root}/keys/jenkins-key.pem" /inheritance:r
-icacls "${path.root}/keys/jenkins-key.pem" /grant:r "$($env:USERNAME):(R)"
-icacls "${path.root}/keys/jenkins-key.pem" /remove "Users" "Authenticated Users" "Everyone"
-EOT
-  }
-
-  triggers = {
-    always = timestamp()
-  }
 }
