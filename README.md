@@ -13,12 +13,18 @@
 
 ## Project Overview
 
+<p align="center">
+  <img src="images/architecture.png" alt="Project Architecture" width="100%">
+</p>
+
+
 Designed and implemented a complete **Three-Tier MERN Stack application deployment** on **Amazon Web Services (AWS)** using modern **DevSecOps** practices. The project automates infrastructure provisioning, CI/CD, GitOps deployment, security scanning, and monitoring for a production-ready Kubernetes environment.
 
 The application consists of a **React frontend**, **Node.js/Express backend**, and **MongoDB database**, deployed on **Amazon EKS** with automated delivery using **Jenkins** and **ArgoCD**. Infrastructure is provisioned using **Terraform**, servers are configured using **Ansible**, and continuous security scanning is integrated through **SonarQube**, **OWASP Dependency Check**, and **Trivy**.
 
 ---
 ```
+
 
                                         END-TO-END DEVSECOPS PROJECT
 
