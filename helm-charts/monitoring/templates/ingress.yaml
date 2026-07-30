@@ -4,6 +4,7 @@ kind: Ingress
 metadata:
   name: monitoring-ingress
   namespace: monitoring
+
   annotations:
     alb.ingress.kubernetes.io/group.name: three-tier-platform
     alb.ingress.kubernetes.io/scheme: internet-facing
@@ -16,6 +17,7 @@ spec:
   rules:
   - http:
       paths:
+
       - path: /grafana
         pathType: Prefix
         backend:
