@@ -1,0 +1,15 @@
+grafana:
+  grafana.ini:
+    server:
+      root_url: "%(protocol)s://%(domain)s/grafana/"
+      serve_from_sub_path: true
+
+prometheus:
+  prometheusSpec:
+    externalUrl: http://k8s-threetierplatform-f4444af35c-1645984444.ap-south-1.elb.amazonaws.com/prometheus
+    routePrefix: /
+
+alertmanager:
+  alertmanagerSpec:
+    externalUrl: http://k8s-threetierplatform-f4444af35c-1645984444.ap-south-1.elb.amazonaws.com/alertmanager
+    routePrefix: /
