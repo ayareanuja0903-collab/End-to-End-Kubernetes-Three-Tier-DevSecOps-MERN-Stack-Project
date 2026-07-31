@@ -9,13 +9,11 @@ metadata:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
 
-    # Same ALB for all applications
     alb.ingress.kubernetes.io/group.name: three-tier-platform
 
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
 
-    # ArgoCD uses HTTPS internally
-    alb.ingress.kubernetes.io/backend-protocol: HTTPS
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
 
 spec:
   ingressClassName: alb
@@ -29,4 +27,4 @@ spec:
           service:
             name: argocd-server
             port:
-              number: 443
+              number: 80
