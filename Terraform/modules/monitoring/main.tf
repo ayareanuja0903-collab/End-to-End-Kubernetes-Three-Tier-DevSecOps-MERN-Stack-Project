@@ -7,24 +7,39 @@ resource "kubernetes_namespace" "monitoring" {
 }
 
 resource "helm_release" "kube_prometheus_stack" {
-
   name       = "kube-prometheus-stack"
+  namespace  = "monitoring"
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "kube-prometheus-stack"
-  version    = var.chart_version
 
-  namespace         = var.namespace
-  create_namespace  = false
-  dependency_update = true
-
-  wait    = true
-  timeout = 900
+  create_namespace = true
 
   values = [
-    file("${path.module}/values.yaml")
-  ]
+    yamlencode({
+      grafana = {
+        enabled       = true
+        adminUser     = "admin"
+        adminPassword = "Admin@123"
 
-  depends_on = [
-    kubernetes_namespace.monitoring
+        service = {
+          type = "ClusterIP"
+        }
+
+        persistence = {
+          enabled          = true
+          storageClassName = "gp2"
+          size             = "10Gi"
+        }
+
+        grafana = {
+          ini = {
+            server = {
+              root_url            = "%(protocol)s://%(domain)s/grafana/"
+              serve_from_sub_path = true
+            }
+          }
+        }
+      }
+    })
   ]
 }
