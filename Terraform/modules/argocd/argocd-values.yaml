@@ -11,8 +11,6 @@ server:
 
   extraArgs:
     - --insecure
-    - --basehref=/argocd
-    - --rootpath=/argocd
 
 configs:
   params:
