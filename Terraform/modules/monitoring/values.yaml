@@ -14,7 +14,9 @@ grafana:
 
   grafana.ini:
     server:
-      root_url: "%(protocol)s://%(domain)s/"
+      root_url: "%(protocol)s://%(domain)s/grafana"
+      serve_from_sub_path: true
+
 
 prometheus:
   enabled: true
@@ -22,14 +24,25 @@ prometheus:
   service:
     type: ClusterIP
 
+  prometheusSpec:
+    externalUrl: /prometheus
+    routePrefix: /prometheus
+
+
 alertmanager:
   enabled: true
 
   service:
     type: ClusterIP
 
+  alertmanagerSpec:
+    externalUrl: /alertmanager
+    routePrefix: /alertmanager
+
+
 nodeExporter:
   enabled: true
+
 
 kubeStateMetrics:
   enabled: true
