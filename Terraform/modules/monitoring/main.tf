@@ -19,7 +19,7 @@ resource "helm_release" "kube_prometheus_stack" {
   create_namespace = true
 
   values = [
-    file("${path.module}/monitoring-values.yaml")
+    file("${path.module}/values.yaml")
   ]
 
   set {
