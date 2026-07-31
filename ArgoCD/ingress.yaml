@@ -4,24 +4,17 @@ metadata:
   name: argocd-ingress
   namespace: argocd
   annotations:
-    kubernetes.io/ingress.class: alb
-
+    alb.ingress.kubernetes.io/group.name: three-tier-platform
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-
-    alb.ingress.kubernetes.io/group.name: three-tier-platform
-
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
-
     alb.ingress.kubernetes.io/backend-protocol: HTTP
-
+    alb.ingress.kubernetes.io/healthcheck-path: /argocd
 spec:
   ingressClassName: alb
-
   rules:
   - http:
       paths:
-      - path: /
+      - path: /argocd
         pathType: Prefix
         backend:
           service:
