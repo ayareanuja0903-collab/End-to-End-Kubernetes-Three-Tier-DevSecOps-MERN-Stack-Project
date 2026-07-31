@@ -7,39 +7,39 @@ resource "kubernetes_namespace" "monitoring" {
 }
 
 resource "helm_release" "kube_prometheus_stack" {
-  name             = "kube-prometheus-stack"
-  namespace        = "monitoring"
-  repository       = "https://prometheus-community.github.io/helm-charts"
-  chart            = "kube-prometheus-stack"
+
+  name       = "kube-prometheus-stack"
+
+  repository = "https://prometheus-community.github.io/helm-charts"
+
+  chart = "kube-prometheus-stack"
+
+  namespace = "monitoring"
+
   create_namespace = true
 
   values = [
-    yamlencode({
-      grafana = {
-        adminUser     = "admin"
-        adminPassword = "Admin@123"
-
-        "grafana.ini" = {
-          server = {
-            root_url            = "%(protocol)s://%(domain)s/grafana/"
-            serve_from_sub_path = true
-          }
-        }
-      }
-
-      prometheus = {
-        prometheusSpec = {
-          routePrefix = "/prometheus"
-          externalUrl = ""
-        }
-      }
-
-      alertmanager = {
-        alertmanagerSpec = {
-          routePrefix = "/alertmanager"
-          externalUrl = ""
-        }
-      }
-    })
+    file("${path.module}/monitoring-values.yaml")
   ]
+
+  set {
+    name  = "prometheus.prometheusSpec.externalUrl"
+    value = "/prometheus"
+  }
+
+  set {
+    name  = "prometheus.prometheusSpec.routePrefix"
+    value = "/prometheus"
+  }
+
+  set {
+    name  = "alertmanager.alertmanagerSpec.externalUrl"
+    value = "/alertmanager"
+  }
+
+  set {
+    name  = "alertmanager.alertmanagerSpec.routePrefix"
+    value = "/alertmanager"
+  }
+
 }
