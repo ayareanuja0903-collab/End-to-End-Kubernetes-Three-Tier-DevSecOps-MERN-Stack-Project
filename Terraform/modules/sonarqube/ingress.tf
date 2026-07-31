@@ -1,22 +1,24 @@
 resource "kubernetes_ingress_v1" "sonarqube" {
 
   metadata {
-
     name      = "sonarqube-ingress"
     namespace = "sonarqube"
 
     annotations = {
 
-      "kubernetes.io/ingress.class" = "alb"
+      "alb.ingress.kubernetes.io/group.name" = "three-tier-platform"
+      "alb.ingress.kubernetes.io/group.order" = "1"
 
       "alb.ingress.kubernetes.io/scheme" = "internet-facing"
-
       "alb.ingress.kubernetes.io/target-type" = "ip"
 
-      "alb.ingress.kubernetes.io/group.name" = "three-tier-platform"
+      "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\":80}]"
 
-      "alb.ingress.kubernetes.io/group.order" = "20"
+      "alb.ingress.kubernetes.io/backend-protocol" = "HTTP"
 
+      "alb.ingress.kubernetes.io/healthcheck-path" = "/sonarqube/api/system/status"
+
+      "alb.ingress.kubernetes.io/success-codes" = "200"
     }
   }
 
@@ -32,7 +34,7 @@ resource "kubernetes_ingress_v1" "sonarqube" {
 
         path {
 
-          path = "/sonarqube"
+          path = "/sonarqube/"
 
           path_type = "Prefix"
 
@@ -44,14 +46,23 @@ resource "kubernetes_ingress_v1" "sonarqube" {
               name = "sonarqube-sonarqube"
 
               port {
-
                 number = 9000
-
               }
+
             }
+
           }
+
         }
+
       }
+
     }
+
   }
+
+
+  depends_on = [
+    helm_release.sonarqube
+  ]
 }

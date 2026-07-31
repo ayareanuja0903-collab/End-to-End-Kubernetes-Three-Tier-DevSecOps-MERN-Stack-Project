@@ -5,12 +5,13 @@ metadata:
   namespace: argocd
   annotations:
     alb.ingress.kubernetes.io/group.name: three-tier-platform
-    alb.ingress.kubernetes.io/group.order: "10"
+    alb.ingress.kubernetes.io/group.order: "20"
 
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
 
     # ArgoCD runs behind HTTP when TLS is terminated at ALB
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
     alb.ingress.kubernetes.io/backend-protocol: HTTP
 
     # Health check

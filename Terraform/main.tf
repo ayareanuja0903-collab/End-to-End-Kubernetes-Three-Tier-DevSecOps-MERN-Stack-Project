@@ -205,3 +205,31 @@ module "addons" {
     null_resource.helm_repo_update
   ]
 }
+
+################################################################################
+# Sonarqube Repository Initialization
+################################################################################
+
+module "sonarqube" {
+  source = "./modules/sonarqube"
+
+  namespace     = "sonarqube"
+  chart_version = "10.4.0+2288"
+
+  depends_on = [
+    module.storageclass
+  ]
+}
+
+################################################################################
+# Storage class Repository Initialization
+################################################################################
+
+
+module "storageclass" {
+  source = "./modules/storageclass"
+
+  depends_on = [
+    module.eks
+  ]
+}

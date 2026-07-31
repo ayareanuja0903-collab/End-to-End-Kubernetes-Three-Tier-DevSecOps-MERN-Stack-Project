@@ -1,0 +1,25 @@
+community:
+  enabled: true
+
+monitoringPasscode: "ChangeMe123456"
+
+service:
+  type: ClusterIP
+
+ingress:
+  enabled: false
+
+persistence:
+  enabled: true
+  storageClass: gp2
+  size: 10Gi
+
+postgresql:
+  enabled: true
+  persistence:
+    enabled: true
+    storageClass: gp2
+    size: 10Gi
+
+sonarProperties:
+  sonar.web.context: "/sonarqube"
