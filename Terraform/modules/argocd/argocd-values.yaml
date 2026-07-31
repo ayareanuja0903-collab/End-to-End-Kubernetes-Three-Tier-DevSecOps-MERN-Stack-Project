@@ -11,10 +11,14 @@ server:
 
   extraArgs:
     - --insecure
+    - --basehref=/argocd
+    - --rootpath=/argocd
 
 configs:
   params:
-    server.insecure: true
+    server.insecure: "true"
+    server.basehref: /argocd
+    server.rootpath: /argocd
 
 controller:
   replicas: 1
