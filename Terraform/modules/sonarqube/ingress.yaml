@@ -1,0 +1,57 @@
+resource "kubernetes_ingress_v1" "sonarqube" {
+
+  metadata {
+
+    name      = "sonarqube-ingress"
+    namespace = "sonarqube"
+
+    annotations = {
+
+      "kubernetes.io/ingress.class" = "alb"
+
+      "alb.ingress.kubernetes.io/scheme" = "internet-facing"
+
+      "alb.ingress.kubernetes.io/target-type" = "ip"
+
+      "alb.ingress.kubernetes.io/group.name" = "three-tier-platform"
+
+      "alb.ingress.kubernetes.io/group.order" = "20"
+
+    }
+  }
+
+
+  spec {
+
+    ingress_class_name = "alb"
+
+
+    rule {
+
+      http {
+
+        path {
+
+          path = "/sonarqube"
+
+          path_type = "Prefix"
+
+
+          backend {
+
+            service {
+
+              name = "sonarqube-sonarqube"
+
+              port {
+
+                number = 9000
+
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
