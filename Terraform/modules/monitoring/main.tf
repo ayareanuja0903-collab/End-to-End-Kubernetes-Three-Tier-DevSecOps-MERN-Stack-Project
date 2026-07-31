@@ -29,14 +29,15 @@ resource "helm_release" "kube_prometheus_stack" {
 
       prometheus = {
         prometheusSpec = {
-          externalUrl = "http://%(domain)s/prometheus"
           routePrefix = "/prometheus"
+          externalUrl = ""
         }
       }
 
       alertmanager = {
         alertmanagerSpec = {
-          externalUrl = "http://%(domain)s/alertmanager"
+          routePrefix = "/alertmanager"
+          externalUrl = ""
         }
       }
     })
