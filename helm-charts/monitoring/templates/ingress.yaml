@@ -4,7 +4,6 @@ kind: Ingress
 metadata:
   name: monitoring-ingress
   namespace: monitoring
-
   annotations:
     alb.ingress.kubernetes.io/group.name: three-tier-platform
     alb.ingress.kubernetes.io/group.order: "10"
@@ -13,29 +12,31 @@ metadata:
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
 
 spec:
+  ingressClassName: alb
+
   rules:
-  - http:
-      paths:
-      - path: /prometheus
-        pathType: Prefix
-        backend:
-          service:
-            name: kube-prometheus-stack-prometheus
-            port:
-              number: 9090
+    - http:
+        paths:
+          - path: /prometheus
+            pathType: Prefix
+            backend:
+              service:
+                name: kube-prometheus-stack-prometheus
+                port:
+                  number: 9090
 
-      - path: /alertmanager
-        pathType: Prefix
-        backend:
-          service:
-            name: kube-prometheus-stack-alertmanager
-            port:
-              number: 9093
+          - path: /alertmanager
+            pathType: Prefix
+            backend:
+              service:
+                name: kube-prometheus-stack-alertmanager
+                port:
+                  number: 9093
 
-      - path: /grafana
-        pathType: Prefix
-        backend:
-          service:
-            name: kube-prometheus-stack-grafana
-            port:
-              number: 80
+          - path: /grafana
+            pathType: Prefix
+            backend:
+              service:
+                name: kube-prometheus-stack-grafana
+                port:
+                  number: 80
