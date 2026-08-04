@@ -4,19 +4,18 @@ global:
 server:
   service:
     type: ClusterIP
-    annotations: {}
 
   ingress:
     enabled: false
 
   extraArgs:
     - --insecure
+    - --rootpath=/argocd
+    - --basehref=/argocd
 
 configs:
   params:
     server.insecure: "true"
-    server.basehref: /argocd
-    server.rootpath: /argocd
 
 controller:
   replicas: 1
