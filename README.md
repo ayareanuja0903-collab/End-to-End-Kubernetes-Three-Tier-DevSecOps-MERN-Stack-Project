@@ -231,43 +231,26 @@ screenshots/sonarqube.png
 ---
 
 ## ArgoCD Dashboard
-
-```
-screenshots/argocd.png
-```
+  <img src="Images/argocd-dashboard.png" alt="ArgoCD" width="100%">
 
 ---
 
 ## Grafana Dashboard
 
-```
-screenshots/grafana.png
-```
-
+  <img src="Images/grafana-dashboard.png" alt="Grafana" width="100%">
 ---
 
 ## Prometheus Dashboard
-
-```
-screenshots/prometheus.png
-```
-
+  <img src="Images/prometheus-query.png" alt="Prometheus" width="100%">
 ---
 
 ## Alertmanager Dashboard
 
-```
-screenshots/alertmanager.png
-```
-
+  <img src="Images/alert-manager.png" alt="Project Architecture" width="100%">
 ---
 
 ## MERN Application
-
-```
-screenshots/application.png
-```
-
+  <img src="Images/MERN-Stack-App.png" alt="Project Architecture" width="100%">
 ---
 
 # 🚀 Deployment Guide
