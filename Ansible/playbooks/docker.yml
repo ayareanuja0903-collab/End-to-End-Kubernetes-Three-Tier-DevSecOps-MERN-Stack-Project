@@ -3,14 +3,19 @@
   hosts: localhost
   become: yes
 
-  tasks:
+  handlers:
+    - name: Restart Docker
+      systemd:
+        name: docker
+        state: restarted
 
+  tasks:
     - name: Update apt cache
       apt:
         update_cache: yes
         cache_valid_time: 3600
 
-    - name: Install required dependencies
+    - name: Install required packages
       apt:
         name:
           - ca-certificates
@@ -30,19 +35,18 @@
         url: https://download.docker.com/linux/ubuntu/gpg
         dest: /etc/apt/keyrings/docker.asc
         mode: "0644"
-        force: yes
 
-    - name: Add Docker APT repository
+    - name: Add Docker repository
       apt_repository:
         repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu noble stable"
         filename: docker
         state: present
 
-    - name: Update apt cache after adding Docker repo
+    - name: Update apt cache
       apt:
         update_cache: yes
 
-    - name: Install Docker packages
+    - name: Install Docker
       apt:
         name:
           - docker-ce
@@ -51,12 +55,13 @@
           - docker-buildx-plugin
           - docker-compose-plugin
         state: present
+      notify: Restart Docker
 
-    - name: Enable and start Docker
+    - name: Enable Docker
       systemd:
         name: docker
-        state: started
         enabled: yes
+        state: started
 
     - name: Add ubuntu user to docker group
       user:
@@ -71,33 +76,15 @@
         append: yes
       ignore_errors: yes
 
-    - name: Restart Docker service
-      systemd:
-        name: docker
-        state: restarted
-
-    - name: Reset SSH connection
-      meta: reset_connection
-
     - name: Wait for Docker socket
       wait_for:
         path: /var/run/docker.sock
         timeout: 30
 
-    - name: Verify Docker version
-      command: docker --version
-      register: docker_version
-      changed_when: false
-
-    - name: Display Docker version
-      debug:
-        msg: "{{ docker_version.stdout }}"
-
     - name: Verify Docker daemon
       command: docker info
-      register: docker_info
       changed_when: false
 
-    - name: Display Docker daemon status
-      debug:
-        msg: "Docker daemon is running successfully."
+    - name: Verify Docker version
+      command: docker --version
+      changed_when: false
