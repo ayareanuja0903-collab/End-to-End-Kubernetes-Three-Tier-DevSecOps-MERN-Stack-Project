@@ -14,7 +14,7 @@
 ## Project Overview
 
 <p align="center">
-  <img src="images/architecture.png" alt="Project Architecture" width="100%">
+  <img src="Images/project-overview.png" alt="Project Architecture" width="100%">
 </p>
 
 
@@ -23,327 +23,309 @@ Designed and implemented a complete **Three-Tier MERN Stack application deployme
 The application consists of a **React frontend**, **Node.js/Express backend**, and **MongoDB database**, deployed on **Amazon EKS** with automated delivery using **Jenkins** and **ArgoCD**. Infrastructure is provisioned using **Terraform**, servers are configured using **Ansible**, and continuous security scanning is integrated through **SonarQube**, **OWASP Dependency Check**, and **Trivy**.
 
 ---
+
+🚀 Project Workflow
+
 ```
-
-
-                                        END-TO-END DEVSECOPS PROJECT
-
-+----------------+
-|   Developer    |
-+----------------+
-        |
-        | 1. Push Code
-        ▼
-+-----------------------+
-|   GitHub Repository   |
-|  (Frontend/Backend)   |
-+-----------------------+
-        |
-        | GitHub Webhook
-        ▼
-+-----------------------+
-|       Jenkins         |
-|      CI Pipeline      |
-+-----------------------+
-        |
-        ├───────────────────────────────────────────────────────────────────────┐
-        |                                                                       |
-        ▼                                                                       ▼
-+----------------+                                                    +----------------+
-| npm install    |                                                    | ESLint         |
-+----------------+                                                    +----------------+
-        |                                                                       |
-        └───────────────────────────────┬───────────────────────────────────────┘
-                                        ▼
-                               +----------------+
-                               | SonarQube Scan |
-                               +----------------+
-                                        |
-                                        ▼
-                               +----------------+
-                               | Quality Gate   |
-                               +----------------+
-                                        |
-                                        ▼
-                               +----------------+
-                               | Docker Build   |
-                               +----------------+
-                                        |
-                                        ▼
-                               +----------------+
-                               | Trivy Scan     |
-                               +----------------+
-                                        |
-                                        ▼
-                               +----------------+
-                               | Amazon ECR     |
-                               | Docker Images  |
-                               +----------------+
-                                        |
-                                        ▼
-                         GitOps (Update Kubernetes Manifests)
-                                        |
-                                        ▼
-                               +----------------+
-                               | GitHub (GitOps)|
-                               +----------------+
-                                        |
-                                        ▼
-                               +----------------+
-                               |    Argo CD     |
-                               +----------------+
-                                        |
-                           Automatic Sync to Kubernetes
-                                        |
-                                        ▼
-======================================================================================
-                          AWS EKS (Kubernetes Cluster)
-======================================================================================
-
-                         +---------------------------+
-                         |        Ingress (ALB)      |
-                         | AWS Load Balancer Ctrl    |
-                         +-------------+-------------+
-                                       |
-                     +-----------------+------------------+
-                     |                                    |
-                     ▼                                    ▼
-            +----------------+                  +----------------+
-            | Frontend Pods  | ----API------->  | Backend Pods   |
-            | React          |                  | Node.js/Express|
-            +----------------+                  +--------+-------+
-                                                          |
-                                                          |
-                                                          ▼
-                                               +--------------------+
-                                               | MongoDB StatefulSet|
-                                               | PVC / EBS Volume   |
-                                               +--------------------+
-
-======================================================================================
-                             Monitoring & Security
-======================================================================================
-
-Prometheus  ─────────────► Collect Metrics
-       │
-       ▼
-Grafana ────────────────► Dashboards
-
-Prometheus Alertmanager ─► Email / Slack Alerts (CPU, Memory, Pod Failure)
+                Developer
+                   │
+                   ▼
+              GitHub Repository
+                   │
+                   ▼
+              Jenkins Pipeline
+                   │
+      ┌────────────┴────────────┐
+      │                         │
+      ▼                         ▼
+ SonarQube Scan          Trivy Scan
+      │                         │
+      └────────────┬────────────┘
+                   ▼
+            Docker Image Build
+                   │
+                   ▼
+             Amazon ECR Push
+                   │
+                   ▼
+         Update Kubernetes YAML
+                   │
+                   ▼
+                ArgoCD
+             (GitOps Sync)
+                   │
+                   ▼
+            Amazon EKS Cluster
+                   │
+       ┌───────────┼───────────┐
+       │           │           │
+       ▼           ▼           ▼
+   Frontend     Backend     MongoDB
+                   │
+                   ▼
+      AWS Load Balancer Controller
+                   │
+                   ▼
+         Application Load Balancer
+                   │
+       ┌───────────┼─────────────┐
+       ▼           ▼             ▼
+   MERN App     ArgoCD      Monitoring
 ```
 
 ---
 
-# Technology Stack
+# 🛠 Technology Stack
+```
+| Category      | Technologies        |
+| ------------- | ------------------- |
+| Cloud         | AWS                 |
+| IaC           | Terraform           |
+| Containers    | Docker              |
+| Orchestration | Kubernetes (EKS)    |
+| CI/CD         | Jenkins             |
+| GitOps        | ArgoCD              |
+| Registry      | Amazon ECR          |
+| Monitoring    | Prometheus, Grafana |
+| Alerting      | Alertmanager        |
+| Security      | SonarQube, Trivy    |
+| Configuration | Ansible             |
+| Database      | MongoDB             |
+| Backend       | Node.js, Express    |
+| Frontend      | React               |
 
-### Cloud
-- AWS
-- Amazon EKS
-- Amazon ECR
-- IAM
-- VPC
-- EC2
+```
 
-### Infrastructure as Code
-- Terraform
+---
+# ⚙ Infrastructure Provisioned
 
-### Configuration Management
-- Ansible
+The infrastructure is fully automated using **Terraform** and provisions the following AWS resources:
 
-### Containerization
-- Docker
-
-### Container Orchestration
-- Kubernetes
-
-### CI/CD
-- Jenkins
-- GitHub Webhooks
-
-### GitOps
-- ArgoCD
-
-### Security
-- SonarQube
-- Trivy
-- OWASP Dependency Check
-
-### Monitoring
-- Prometheus
-- Grafana
-
-### Application Stack
-- React.js
-- Node.js
-- Express.js
-- MongoDB
+- ✅ Amazon VPC
+- ✅ Public & Private Subnets
+- ✅ Internet Gateway
+- ✅ NAT Gateway
+- ✅ Route Tables
+- ✅ Security Groups
+- ✅ IAM Roles
+- ✅ OIDC Provider (IRSA)
+- ✅ Amazon EKS Cluster
+- ✅ Managed Node Groups
+- ✅ Amazon ECR Repositories
+- ✅ Jenkins EC2 Instance
+- ✅ AWS Application Load Balancer (ALB)
 
 ---
 
-# Project Workflow
+# 🔄 CI/CD Pipeline
 
-## 1. Infrastructure Provisioning
-
-Terraform automatically provisions:
-
-- AWS VPC
-- Public & Private Subnets
-- Internet Gateway
-- NAT Gateway
-- Route Tables
-- Security Groups
-- IAM Roles
-- Amazon EKS Cluster
-- Managed Node Groups
-- Amazon ECR Repositories
-
----
-
-## 2. Server Configuration
-
-Ansible automates server setup by installing and configuring:
-
-- Docker
-- Jenkins
-- kubectl
-- Helm
-- AWS CLI
-- Trivy
-- Sonar Scanner
-- Jenkins Environment
-
----
-
-## 3. Source Code Management
-
-The GitHub repository contains:
-
-- React Frontend
-- Node.js Backend
-- MongoDB Configuration
-- Kubernetes Manifests
-- Jenkins Pipelines
-- Terraform Code
-- Ansible Playbooks
-
----
-
-## 4. Continuous Integration (CI)
-
-Whenever code is pushed to GitHub, a webhook automatically triggers Jenkins.
-
-The Jenkins pipeline performs:
-
-- Source Code Checkout
-- Dependency Installation
-- Application Build
-- SonarQube Static Code Analysis
-- OWASP Dependency Check
-- Trivy Image Scan
-- Docker Image Build
-- Push Docker Images to Amazon ECR
-- Update Kubernetes Manifest with Latest Image Tag
-- Commit Updated Manifest to GitHub
+```text
+                     Git Push
+                        │
+                        ▼
+                Jenkins Pipeline
+                        │
+                        ▼
+                 Checkout Code
+                        │
+                        ▼
+             Install Dependencies
+                        │
+                        ▼
+                  Run Unit Tests
+                        │
+                        ▼
+             SonarQube Analysis
+                        │
+                        ▼
+                 Quality Gate
+                        │
+                        ▼
+               Docker Image Build
+                        │
+                        ▼
+                Trivy Image Scan
+                        │
+                        ▼
+           Push Image to Amazon ECR
+                        │
+                        ▼
+        Update Kubernetes Manifests
+                        │
+                        ▼
+                    Git Push
+                        │
+                        ▼
+                 ArgoCD Auto Sync
+                        │
+                        ▼
+             Deploy to Amazon EKS
+```
 
 ---
 
-## 5. Continuous Deployment (CD)
+# ☸ Kubernetes Resources
 
-ArgoCD continuously monitors the GitHub repository.
-
-Whenever Kubernetes manifests are updated, ArgoCD automatically:
-
-- Detects Changes
-- Synchronizes the Cluster
-- Deploys the Latest Version
-- Performs Rolling Updates
-- Maintains Desired State (GitOps)
-
-No manual deployment is required.
-
----
-
-## 6. Kubernetes Deployment
-
-The application is deployed on Amazon EKS using:
+The application is deployed using the following Kubernetes resources:
 
 - Namespace
-- Deployments
-- Services
-- ConfigMaps
-- Secrets
-- Horizontal Pod Autoscaler (HPA)
+- Deployment
+- ReplicaSet
+- Service
+- ConfigMap
+- Secret
 - Ingress
-- LoadBalancer Service
+- Persistent Volume (PV)
+- Persistent Volume Claim (PVC)
+- Horizontal Pod Autoscaler (HPA)
 
 ---
 
-## 7. Security Integration
+# 📊 Monitoring Stack
 
-The project integrates multiple security tools:
-
-- SonarQube for Static Code Analysis
-- OWASP Dependency Check for Vulnerability Detection
-- Trivy for Container Image Scanning
-- Kubernetes Secrets for Sensitive Data
-- IAM Roles with Least Privilege Access
-
----
-
-## 8. Monitoring & Observability
-
-Prometheus collects:
-
-- CPU Usage
-- Memory Usage
-- Pod Metrics
-- Node Metrics
-- Application Metrics
-
-Grafana dashboards display:
-
-- Cluster Health
-- Pod Status
-- CPU & Memory Utilization
-- Node Health
-- Application Performance
+| Component | Purpose |
+|-----------|---------|
+| **Prometheus** | Metrics Collection |
+| **Grafana** | Visualization & Dashboards |
+| **Alertmanager** | Alert Management |
+| **Node Exporter** | Node Metrics |
+| **kube-state-metrics** | Kubernetes Cluster Metrics |
 
 ---
 
-# CI/CD Pipeline Flow
+# 🔐 Security
+
+## SonarQube
+
+- ✅ Static Code Analysis
+- ✅ Code Quality Gate
+- ✅ Bug Detection
+- ✅ Vulnerability Detection
+- ✅ Code Smell Analysis
+
+### Trivy
+
+- ✅ Container Image Scanning
+- ✅ Vulnerability Scanning
+- ✅ Misconfiguration Detection
+- ✅ Secret Scanning
+
+---
+
+# 📸 Project Screenshots
+
+## Jenkins Dashboard
 
 ```
-Developer
-     │
-     ▼
-GitHub Repository
-     │
-GitHub Webhook
-     │
-     ▼
-Jenkins Pipeline
-     │
-     ├── Checkout Source Code
-     ├── Install Dependencies
-     ├── Build Application
-     ├── SonarQube Analysis
-     ├── OWASP Dependency Check
-     ├── Trivy Image Scan
-     ├── Docker Build
-     ├── Push Image to Amazon ECR
-     └── Update Kubernetes Manifest
-                │
-                ▼
-          GitHub Repository
-                │
-                ▼
-              ArgoCD
-                │
-                ▼
-        Amazon EKS Cluster
-                │
-                ▼
-     React + Node.js + MongoDB
+screenshots/jenkins.png
+```
+
+---
+
+## SonarQube Dashboard
+
+```
+screenshots/sonarqube.png
+```
+
+---
+
+## ArgoCD Dashboard
+
+```
+screenshots/argocd.png
+```
+
+---
+
+## Grafana Dashboard
+
+```
+screenshots/grafana.png
+```
+
+---
+
+## Prometheus Dashboard
+
+```
+screenshots/prometheus.png
+```
+
+---
+
+## Alertmanager Dashboard
+
+```
+screenshots/alertmanager.png
+```
+
+---
+
+## MERN Application
+
+```
+screenshots/application.png
+```
+
+---
+
+# 🚀 Deployment Guide
+
+## 1️⃣ Clone Repository
+
+```bash
+git clone https://github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git
+
+cd End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project
+```
+
+---
+
+## 2️⃣ Provision AWS Infrastructure
+
+```bash
+cd Terraform
+
+terraform init
+
+terraform plan
+
+terraform apply
+```
+
+---
+
+## 3️⃣ Configure Jenkins Server
+
+```bash
+cd ../Ansible
+
+ansible-playbook site.yml
+```
+
+---
+
+## 4️⃣ Deploy Kubernetes Resources
+
+```bash
+kubectl apply -f ArgoCD/applications/
+```
+
+---
+
+# ✅ Verification
+
+Verify that the infrastructure and application are running correctly.
+
+```bash
+kubectl get nodes
+
+kubectl get pods -A
+
+kubectl get svc -A
+
+kubectl get ingress -A
 ```
 
 ---
