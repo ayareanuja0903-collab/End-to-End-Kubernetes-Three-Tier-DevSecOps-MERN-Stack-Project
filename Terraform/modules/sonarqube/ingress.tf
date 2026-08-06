@@ -6,10 +6,10 @@ resource "kubernetes_ingress_v1" "sonarqube" {
 
     annotations = {
 
-      "alb.ingress.kubernetes.io/group.name" = "three-tier-platform"
+      "alb.ingress.kubernetes.io/group.name"  = "three-tier-platform"
       "alb.ingress.kubernetes.io/group.order" = "1"
 
-      "alb.ingress.kubernetes.io/scheme" = "internet-facing"
+      "alb.ingress.kubernetes.io/scheme"      = "internet-facing"
       "alb.ingress.kubernetes.io/target-type" = "ip"
 
       "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\":80}]"

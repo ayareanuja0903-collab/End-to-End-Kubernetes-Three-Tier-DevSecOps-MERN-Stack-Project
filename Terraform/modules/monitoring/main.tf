@@ -30,7 +30,7 @@ resource "helm_release" "kube_prometheus_stack" {
       prometheus = {
         prometheusSpec = {
           routePrefix = "/prometheus"
-           externalUrl = "/prometheus"
+          externalUrl = "/prometheus"
         }
       }
 
@@ -40,19 +40,19 @@ resource "helm_release" "kube_prometheus_stack" {
           externalUrl = ""
         }
       }
-      
+
       kubeStateMetrics = {
         enabled = true
       }
-      
+
       nodeExporter = {
         enabled = true
       }
-      
+
       "prometheus-node-exporter" = {
         enabled = true
       }
-      
+
       cleanupCustomResource = true
     })
   ]
