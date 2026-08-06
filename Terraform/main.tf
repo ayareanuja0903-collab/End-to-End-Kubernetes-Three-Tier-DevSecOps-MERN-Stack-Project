@@ -233,3 +233,11 @@ module "storageclass" {
     module.eks
   ]
 }
+
+resource "null_resource" "update_kubeconfig" {
+  depends_on = [module.eks]
+
+  provisioner "local-exec" {
+    command = "aws eks update-kubeconfig --region ap-south-1 --name ${module.eks.cluster_name}"
+  }
+}
