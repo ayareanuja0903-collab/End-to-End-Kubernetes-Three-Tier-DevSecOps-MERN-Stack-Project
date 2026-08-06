@@ -1,21 +1,18 @@
 global:
   domain: ""
 
+configs:
+  params:
+    server.insecure: "true"
+    server.basehref: "/argocd"
+    server.rootpath: "/argocd"
+
 server:
   service:
     type: ClusterIP
 
   ingress:
     enabled: false
-
-  extraArgs:
-    - --insecure
-    - --rootpath=/argocd
-    - --basehref=/argocd
-
-configs:
-  params:
-    server.insecure: "true"
 
 controller:
   replicas: 1
