@@ -1,18 +1,24 @@
 global:
   domain: ""
 
-configs:
-  params:
-    server.insecure: "true"
-    server.basehref: "/argocd"
-    server.rootpath: "/argocd"
-
 server:
   service:
     type: ClusterIP
 
   ingress:
     enabled: false
+
+  extraArgs:
+    - --insecure
+    - --rootpath=/argocd
+    - --basehref=/argocd
+
+configs:
+  params:
+    server.insecure: "true"
+
+  cm:
+    argocd_url = "http://${aws_lb.platform.dns_name}/argocd"
 
 controller:
   replicas: 1

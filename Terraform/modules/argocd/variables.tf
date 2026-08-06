@@ -15,3 +15,7 @@ variable "create_namespace" {
   type        = bool
   default     = true
 }
+
+variable "argocd_url" {
+  type = string
+}

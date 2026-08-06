@@ -30,6 +30,7 @@ resource "helm_release" "argocd" {
 
   values = [
     file("${path.module}/argocd-values.yaml")
+    argocd_url = var.argocd_url
   ]
 
   depends_on = [
