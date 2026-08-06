@@ -24,6 +24,7 @@ resource "kubernetes_ingress_v1" "argocd" {
 
     rule {
       http {
+
         path {
           path      = "/argocd"
           path_type = "Prefix"

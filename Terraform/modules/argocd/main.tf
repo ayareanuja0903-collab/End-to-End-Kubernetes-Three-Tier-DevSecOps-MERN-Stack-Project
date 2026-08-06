@@ -17,20 +17,19 @@ resource "kubernetes_namespace" "argocd" {
 
 resource "helm_release" "argocd" {
 
-  name       = "argocd"
-  repository = "https://argoproj.github.io/argo-helm"
-  chart      = "argo-cd"
-  version    = var.chart_version
+  name             = "argocd"
+  repository       = "https://argoproj.github.io/argo-helm"
+  chart            = "argo-cd"
+  version          = var.chart_version
 
-  namespace        = var.namespace
-  create_namespace = false
+  namespace         = var.namespace
+  create_namespace  = false
 
   wait    = true
   timeout = 900
 
   values = [
-    file("${path.module}/argocd-values.yaml")
-    argocd_url = var.argocd_url
+    file("${path.module}/values.yaml")
   ]
 
   depends_on = [
