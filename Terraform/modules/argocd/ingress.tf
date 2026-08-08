@@ -1,7 +1,4 @@
 resource "kubernetes_ingress_v1" "argocd" {
-  depends_on = [
-    helm_release.argocd
-  ]
 
   metadata {
     name      = "argocd-ingress"
@@ -24,7 +21,6 @@ resource "kubernetes_ingress_v1" "argocd" {
 
     rule {
       http {
-
         path {
           path      = "/argocd"
           path_type = "Prefix"
@@ -34,7 +30,7 @@ resource "kubernetes_ingress_v1" "argocd" {
               name = "argocd-server"
 
               port {
-                number = 80
+                number = 81
               }
             }
           }
@@ -42,4 +38,9 @@ resource "kubernetes_ingress_v1" "argocd" {
       }
     }
   }
+  
+  depends_on = [
+    kubernetes_deployment_v1.argocd_server
+  ]
+
 }
