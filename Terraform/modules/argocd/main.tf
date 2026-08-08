@@ -1,38 +1,29 @@
 ###############################################################################
-# ArgoCD Namespace
-###############################################################################
-
-resource "kubernetes_namespace" "argocd" {
-
-  count = var.create_namespace ? 1 : 0
-
-  metadata {
-    name = var.namespace
-  }
-}
-
-###############################################################################
-# ArgoCD Helm Release
+# ArgoCD
 ###############################################################################
 
 resource "helm_release" "argocd" {
-
   name             = "argocd"
+  namespace        = "argocd"
   repository       = "https://argoproj.github.io/argo-helm"
   chart            = "argo-cd"
-  version          = var.chart_version
-
-  namespace         = var.namespace
-  create_namespace  = false
-
-  wait    = true
-  timeout = 900
+  version          = "7.7.11"
+  create_namespace = true
 
   values = [
-    file("${path.module}/values.yaml")
-  ]
+    yamlencode({
+      server = {
+        extraArgs = [
+          "--insecure"
+        ]
+      }
 
-  depends_on = [
-    kubernetes_namespace.argocd
+      configs = {
+        params = {
+          "server.insecure" = "true"
+          "server.rootpath" = "/argocd"
+        }
+      }
+    })
   ]
 }
