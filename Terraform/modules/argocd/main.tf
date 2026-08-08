@@ -1,7 +1,3 @@
-###############################################################################
-# ArgoCD
-###############################################################################
-
 resource "helm_release" "argocd" {
   name             = "argocd"
   namespace        = "argocd"
@@ -13,6 +9,14 @@ resource "helm_release" "argocd" {
   values = [
     yamlencode({
       server = {
+        service = {
+          type = "ClusterIP"
+        }
+
+        ingress = {
+          enabled = false
+        }
+
         extraArgs = [
           "--insecure"
         ]
@@ -21,8 +25,33 @@ resource "helm_release" "argocd" {
       configs = {
         params = {
           "server.insecure" = "true"
+          "server.basehref" = "/argocd"
           "server.rootpath" = "/argocd"
         }
+      }
+
+      controller = {
+        replicas = 1
+      }
+
+      repoServer = {
+        replicas = 1
+      }
+
+      applicationSet = {
+        replicas = 1
+      }
+
+      redis = {
+        enabled = true
+      }
+
+      dex = {
+        enabled = false
+      }
+
+      notifications = {
+        enabled = false
       }
     })
   ]
