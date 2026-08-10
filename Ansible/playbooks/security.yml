@@ -50,11 +50,9 @@
           - gnupg
         state: present
         update_cache: yes
-
-
-   # -------------------------
-# Install Trivy
-# -------------------------
+  # -------------------------
+  # Install Trivy
+  # -------------------------
 
     - name: Install Trivy
       shell: |
@@ -64,13 +62,14 @@
         creates: /usr/local/bin/trivy
 
     - name: Verify Trivy installation
-      command: trivy --version
+      command: /usr/local/bin/trivy --version
       register: trivy_version
       changed_when: false
 
     - name: Display Trivy version
       debug:
-      msg: "{{ trivy_version.stdout }}"
+        msg: "{{ trivy_version.stdout }}"
+
 
     # -------------------------
     # SonarScanner Installation
