@@ -15,7 +15,7 @@ pipeline {
         ECR_REPOSITORY = 'three-tier-dev-frontend'
 
         GITHUB_CREDS   = 'github-creds'
-        AWS_CREDS      = 'aws-creds'
+        AWS_CREDS      = 'AWS-crede'
         SONARQUBE_ENV  = 'SonarQube'
 
         IMAGE_TAG      = "${BUILD_NUMBER}"
