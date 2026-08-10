@@ -14,7 +14,7 @@ pipeline {
         GITHUB_REPO    = 'https://github.com/ayareanuja0903-collab/End-to-End-Kubernetes-Three-Tier-DevSecOps-MERN-Stack-Project.git'
         ECR_REPOSITORY = 'three-tier-dev-frontend'
 
-        GITHUB_CREDS   = 'github-creds'
+        GITHUB_CREDS   = 'github-crede'
         AWS_CREDS      = 'AWS-crede'
         SONARQUBE_ENV  = 'SonarQube'
 
