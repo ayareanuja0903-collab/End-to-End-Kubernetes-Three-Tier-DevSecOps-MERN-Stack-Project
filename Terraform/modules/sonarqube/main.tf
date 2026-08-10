@@ -9,6 +9,11 @@ resource "helm_release" "sonarqube" {
   namespace        = "sonarqube"
   create_namespace = true
 
+  wait          = true
+  wait_for_jobs = true
+  timeout       = 900
+  atomic        = true
+
   values = [
     file("${path.module}/values.yaml")
   ]

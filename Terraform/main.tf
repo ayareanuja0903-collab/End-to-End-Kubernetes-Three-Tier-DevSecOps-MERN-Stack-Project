@@ -217,7 +217,7 @@ module "sonarqube" {
   chart_version = "10.4.0+2288"
 
   depends_on = [
-    module.storageclass
+    module.alb_controller
   ]
 }
 
