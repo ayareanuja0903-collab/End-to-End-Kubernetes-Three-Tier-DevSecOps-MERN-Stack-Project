@@ -5,6 +5,8 @@ monitoringPasscode: "ChangeMe123456"
 
 service:
   type: ClusterIP
+  externalPort: 9000
+  internalPort: 9000
 
 ingress:
   enabled: false
