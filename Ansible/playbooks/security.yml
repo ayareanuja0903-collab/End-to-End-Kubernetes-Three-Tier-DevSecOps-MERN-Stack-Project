@@ -52,16 +52,25 @@
         update_cache: yes
 
 
-    # -------------------------
-    # Install Trivy
-    # -------------------------
+   # -------------------------
+# Install Trivy
+# -------------------------
 
     - name: Install Trivy
       shell: |
-        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+          | sh -s -- -b /usr/local/bin
       args:
         creates: /usr/local/bin/trivy
 
+    - name: Verify Trivy installation
+      command: trivy --version
+      register: trivy_version
+      changed_when: false
+
+    - name: Display Trivy version
+      debug:
+      msg: "{{ trivy_version.stdout }}"
 
     # -------------------------
     # SonarScanner Installation
