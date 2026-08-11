@@ -17,7 +17,7 @@ pipeline {
         GITHUB_CREDS   = 'github-crede'
         AWS_CREDS      = 'AWS-crede'
         SONARQUBE_ENV  = 'SonarQube'
-        SLACK_WEBHOOK_CRED  = 'incoming-webhook'
+    
 
         IMAGE_TAG      = "${BUILD_NUMBER}"
     }
@@ -317,41 +317,17 @@ pipeline {
         }
     }
     
-    post {
+   post {
 
-        always {
-            cleanWs()
-        }
+    always {
+        cleanWs()
+    }
 
-        success {
-            withCredentials([string(credentialsId: 'SLACK_WEBHOOK_CRED', variable: 'SLACK_WEBHOOK')]) {
-                sh '''
-                    curl -X POST \
-                    -H "Content-Type: application/json" \
-                    --data '{"text":"✅ Frontend Pipeline SUCCESS"}' \
-                    "$SLACK_WEBHOOK"
-                '''
-            }
-        }
+    success {
+        echo 'Frontend Pipeline Completed Successfully'
+    }
 
-        failure {
-            withCredentials([string(credentialsId: 'SLACK_WEBHOOK_CRED', variable: 'SLACK_WEBHOOK')]) {
-                sh '''
-                    curl -X POST \
-                    -H "Content-Type: application/json" \
-                    --data '{"text":"❌ Frontend Pipeline FAILED"}' \
-                    "$SLACK_WEBHOOK"
-                '''
-            }
-        }
-
-
-        unstable {
-            slackSend(
-                channel: '#three-tier-app',
-                color: 'warning',
-                message: "⚠️ Frontend Pipeline UNSTABLE\nBuild: #${env.BUILD_NUMBER}"
-            )
-        }
+    failure {
+        echo 'Frontend Pipeline Failed'
     }
 }
