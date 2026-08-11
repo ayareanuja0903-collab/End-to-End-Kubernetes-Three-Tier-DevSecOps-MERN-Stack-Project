@@ -17,6 +17,8 @@ pipeline {
         GITHUB_CREDS   = 'github-crede'
         AWS_CREDS      = 'AWS-crede'
         SONARQUBE_ENV  = 'SonarQube'
+        
+        SLACK_WEBHOOK_CRED  = 'incoming-webhook'
 
         IMAGE_TAG      = "${BUILD_NUMBER}"
     }
@@ -148,12 +150,15 @@ pipeline {
             steps {
                 dir('Application-Code/frontend') {
                     withSonarQubeEnv("${SONARQUBE_ENV}") {
-                        sh '''
-                            sonar-scanner \
-                              -Dsonar.projectKey=frontend \
-                              -Dsonar.projectName=three-tier-frontend \
-                              -Dsonar.sources=.
-                        '''
+                        withCredentials([string(credentialsId: 'SONARQUBE_ENV', variable: 'SONAR_TOKEN')]) {
+                            sh '''
+                                sonar-scanner \
+                                -Dsonar.projectKey=frontend \
+                                -Dsonar.projectName=three-tier-frontend \
+                                -Dsonar.sources=. \
+                                -Dsonar.token=$SONAR_TOKEN
+                            '''
+                        }
                     }
                 }
             }
@@ -323,24 +328,27 @@ pipeline {
         }
 
         success {
-            echo 'Frontend Pipeline Completed Successfully'
-
-            slackSend(
-                channel: '#three-tier-app',
-                color: 'good',
-                message: "✅ Frontend Pipeline SUCCESS\nJob: ${env.JOB_NAME}\nBuild: #${env.BUILD_NUMBER}\nImage: ${env.BUILD_NUMBER}"
-            )
+            withCredentials([string(credentialsId: 'SLACK_WEBHOOK_CRED', variable: 'SLACK_WEBHOOK')]) {
+                sh '''
+                    curl -X POST \
+                    -H "Content-Type: application/json" \
+                    --data '{"text":"✅ Frontend Pipeline SUCCESS"}' \
+                    "$SLACK_WEBHOOK"
+                '''
+            }
         }
 
         failure {
-            echo 'Frontend Pipeline Failed'
-
-            slackSend(
-                channel: '#three-tier-app',
-                color: 'danger',
-                message: "❌ Frontend Pipeline FAILED\nJob: ${env.JOB_NAME}\nBuild: #${env.BUILD_NUMBER}\nCheck Jenkins: ${env.BUILD_URL}"
-            )
+            withCredentials([string(credentialsId: 'SLACK_WEBHOOK_CRED', variable: 'SLACK_WEBHOOK')]) {
+                sh '''
+                    curl -X POST \
+                    -H "Content-Type: application/json" \
+                    --data '{"text":"❌ Frontend Pipeline FAILED"}' \
+                    "$SLACK_WEBHOOK"
+                '''
+            }
         }
+
 
         unstable {
             slackSend(
