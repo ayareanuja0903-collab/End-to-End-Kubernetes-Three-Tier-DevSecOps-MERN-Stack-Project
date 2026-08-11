@@ -183,8 +183,8 @@ module "argocd" {
 module "monitoring" {
   source = "./modules/monitoring"
 
-  cluster_name = module.eks.cluster_name
-  namespace    = "monitoring"
+  cluster_name      = module.eks.cluster_name
+  namespace         = "monitoring"
   slack_webhook_url = var.slack_webhook_url
 
   depends_on = [

@@ -97,7 +97,7 @@ resource "kubernetes_manifest" "alertmanager_slack" {
                 key  = "url"
               }
 
-              channel      = "#alerts"
+              channel      = "#three-tier-app"
               sendResolved = true
 
               title = "🚨 Kubernetes Alert"
