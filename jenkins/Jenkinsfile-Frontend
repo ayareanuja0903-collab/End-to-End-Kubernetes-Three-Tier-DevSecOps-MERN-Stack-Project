@@ -17,7 +17,6 @@ pipeline {
         GITHUB_CREDS   = 'github-crede'
         AWS_CREDS      = 'AWS-crede'
         SONARQUBE_ENV  = 'SonarQube'
-        
         SLACK_WEBHOOK_CRED  = 'incoming-webhook'
 
         IMAGE_TAG      = "${BUILD_NUMBER}"
@@ -150,15 +149,12 @@ pipeline {
             steps {
                 dir('Application-Code/frontend') {
                     withSonarQubeEnv("${SONARQUBE_ENV}") {
-                        withCredentials([string(credentialsId: 'SONARQUBE_ENV', variable: 'SONAR_TOKEN')]) {
-                            sh '''
-                                sonar-scanner \
-                                -Dsonar.projectKey=frontend \
-                                -Dsonar.projectName=three-tier-frontend \
-                                -Dsonar.sources=. \
-                                -Dsonar.token=$SONAR_TOKEN
-                            '''
-                        }
+                        sh '''
+                            sonar-scanner \
+                              -Dsonar.projectKey=frontend \
+                              -Dsonar.projectName=three-tier-frontend \
+                              -Dsonar.sources=.
+                        '''
                     }
                 }
             }
