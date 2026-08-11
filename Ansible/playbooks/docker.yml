@@ -109,7 +109,7 @@
       ignore_errors: yes
 
     # --------------------------------------------------
-    # 11. Enable Docker at system startup
+    # 11. Enable and start Docker
     # --------------------------------------------------
     - name: Enable and start Docker
       systemd:
@@ -118,22 +118,13 @@
         state: started
 
     # --------------------------------------------------
-    # 12. Apply Docker restart immediately if required
+    # 12. Apply Docker restart immediately
     # --------------------------------------------------
     - name: Flush Docker handlers
       meta: flush_handlers
 
     # --------------------------------------------------
-    # 13. Reset Ansible SSH connection
-    # --------------------------------------------------
-    # This refreshes group membership for Ansible's
-    # subsequent commands. No "newgrp" is required.
-    # --------------------------------------------------
-    - name: Reset SSH connection
-      meta: reset_connection
-
-    # --------------------------------------------------
-    # 14. Wait for Docker socket
+    # 13. Wait for Docker socket
     # --------------------------------------------------
     - name: Wait for Docker socket
       wait_for:
@@ -141,7 +132,7 @@
         timeout: 30
 
     # --------------------------------------------------
-    # 15. Check Docker socket permissions
+    # 14. Check Docker socket permissions
     # --------------------------------------------------
     - name: Check Docker socket
       stat:
@@ -156,11 +147,26 @@
           - "Docker socket mode: {{ docker_socket.stat.mode | default('unknown') }}"
 
     # --------------------------------------------------
-    # 16. Verify Docker as ubuntu user
+    # 15. Verify ubuntu is in docker group
+    # --------------------------------------------------
+    - name: Check ubuntu docker group membership
+      command: id ubuntu
+      register: ubuntu_id
+      changed_when: false
+
+    - name: Display ubuntu groups
+      debug:
+        var: ubuntu_id.stdout
+
+    # --------------------------------------------------
+    # 16. Verify Docker daemon as ubuntu
     # --------------------------------------------------
     - name: Verify Docker daemon for ubuntu
       become_user: ubuntu
-      command: docker info
+      shell: |
+        exec sg docker -c "docker info"
+      args:
+        executable: /bin/bash
       changed_when: false
 
     # --------------------------------------------------
@@ -175,5 +181,8 @@
     # --------------------------------------------------
     - name: Verify Docker Compose
       become_user: ubuntu
-      command: docker compose version
+      shell: |
+        exec sg docker -c "docker compose version"
+      args:
+        executable: /bin/bash
       changed_when: false
