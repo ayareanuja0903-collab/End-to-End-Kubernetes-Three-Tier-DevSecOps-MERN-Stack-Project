@@ -1,188 +1,247 @@
 ---
-- name: Install and Configure Docker
+
+* name: Install and Configure Docker
   hosts: localhost
   become: yes
 
   handlers:
-    - name: Restart Docker
-      systemd:
-        name: docker
-        state: restarted
+
+  * name: Restart Docker
+    systemd:
+    name: docker
+    state: restarted
 
   tasks:
 
-    # --------------------------------------------------
-    # 1. Update package cache
-    # --------------------------------------------------
-    - name: Update apt cache
-      apt:
-        update_cache: yes
-        cache_valid_time: 3600
+  # --------------------------------------------------
 
-    # --------------------------------------------------
-    # 2. Install Docker prerequisites
-    # --------------------------------------------------
-    - name: Install required packages
-      apt:
-        name:
-          - ca-certificates
-          - curl
-          - gnupg
-          - lsb-release
-        state: present
+  # 1. Update package cache
 
-    # --------------------------------------------------
-    # 3. Create Docker keyrings directory
-    # --------------------------------------------------
-    - name: Create Docker keyrings directory
-      file:
-        path: /etc/apt/keyrings
-        state: directory
-        mode: "0755"
+  # --------------------------------------------------
 
-    # --------------------------------------------------
-    # 4. Download Docker GPG key
-    # --------------------------------------------------
-    - name: Download Docker GPG key
-      get_url:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        dest: /etc/apt/keyrings/docker.asc
-        mode: "0644"
+  * name: Update apt cache
+    apt:
+    update_cache: yes
+    cache_valid_time: 3600
 
-    # --------------------------------------------------
-    # 5. Add official Docker repository
-    # --------------------------------------------------
-    - name: Add Docker repository
-      apt_repository:
-        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu noble stable"
-        filename: docker
-        state: present
+  # --------------------------------------------------
 
-    # --------------------------------------------------
-    # 6. Update apt cache after adding Docker repository
-    # --------------------------------------------------
-    - name: Update apt cache after Docker repository
-      apt:
-        update_cache: yes
+  # 2. Install Docker prerequisites
 
-    # --------------------------------------------------
-    # 7. Install Docker Engine and plugins
-    # --------------------------------------------------
-    - name: Install Docker
-      apt:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
-          - docker-buildx-plugin
-          - docker-compose-plugin
-        state: present
+  # --------------------------------------------------
+
+  * name: Install required packages
+    apt:
+    name:
+
+    * ca-certificates
+    * curl
+    * gnupg
+    * lsb-release
+      state: present
+
+  # --------------------------------------------------
+
+  # 3. Create Docker keyrings directory
+
+  # --------------------------------------------------
+
+  * name: Create Docker keyrings directory
+    file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+  # --------------------------------------------------
+
+  # 4. Download Docker GPG key
+
+  # --------------------------------------------------
+
+  * name: Download Docker GPG key
+    get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: "0644"
+
+  # --------------------------------------------------
+
+  # 5. Add official Docker repository
+
+  # --------------------------------------------------
+
+  * name: Add Docker repository
+    apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu noble stable"
+    filename: docker
+    state: present
+
+  # --------------------------------------------------
+
+  # 6. Update apt cache after adding Docker repository
+
+  # --------------------------------------------------
+
+  * name: Update apt cache after Docker repository
+    apt:
+    update_cache: yes
+
+  # --------------------------------------------------
+
+  # 7. Install Docker Engine and plugins
+
+  # --------------------------------------------------
+
+  * name: Install Docker
+    apt:
+    name:
+
+    * docker-ce
+    * docker-ce-cli
+    * containerd.io
+    * docker-buildx-plugin
+    * docker-compose-plugin
+      state: present
       notify: Restart Docker
 
-    # --------------------------------------------------
-    # 8. Ensure Docker group exists
-    # --------------------------------------------------
-    - name: Ensure docker group exists
-      group:
-        name: docker
-        state: present
+  # --------------------------------------------------
 
-    # --------------------------------------------------
-    # 9. Add ubuntu user to Docker group
-    # --------------------------------------------------
-    - name: Add ubuntu user to docker group
-      user:
-        name: ubuntu
-        groups:
-          - docker
-        append: yes
+  # 8. Ensure Docker group exists
 
-    # --------------------------------------------------
-    # 10. Add Jenkins user to Docker group
-    # --------------------------------------------------
-    - name: Add jenkins user to docker group
-      user:
-        name: jenkins
-        groups:
-          - docker
-        append: yes
+  # --------------------------------------------------
+
+  * name: Ensure docker group exists
+    group:
+    name: docker
+    state: present
+
+  # --------------------------------------------------
+
+  # 9. Add ubuntu user to Docker group
+
+  # --------------------------------------------------
+
+  * name: Add ubuntu user to docker group
+    user:
+    name: ubuntu
+    groups:
+
+    * docker
+      append: yes
+
+  # --------------------------------------------------
+
+  # 10. Add Jenkins user to Docker group
+
+  # --------------------------------------------------
+
+  * name: Add jenkins user to docker group
+    user:
+    name: jenkins
+    groups:
+
+    * docker
+      append: yes
       ignore_errors: yes
 
-    # --------------------------------------------------
-    # 11. Enable and start Docker
-    # --------------------------------------------------
-    - name: Enable and start Docker
-      systemd:
-        name: docker
-        enabled: yes
-        state: started
+  # --------------------------------------------------
 
-    # --------------------------------------------------
-    # 12. Apply Docker restart immediately
-    # --------------------------------------------------
-    - name: Flush Docker handlers
-      meta: flush_handlers
+  # 11. Enable Docker at system startup
 
-    # --------------------------------------------------
-    # 13. Wait for Docker socket
-    # --------------------------------------------------
-    - name: Wait for Docker socket
-      wait_for:
-        path: /var/run/docker.sock
-        timeout: 30
+  # --------------------------------------------------
 
-    # --------------------------------------------------
-    # 14. Check Docker socket permissions
-    # --------------------------------------------------
-    - name: Check Docker socket
-      stat:
-        path: /var/run/docker.sock
-      register: docker_socket
+  * name: Enable and start Docker
+    systemd:
+    name: docker
+    enabled: yes
+    state: started
 
-    - name: Display Docker socket information
-      debug:
-        msg:
-          - "Docker socket exists: {{ docker_socket.stat.exists }}"
-          - "Docker socket group: {{ docker_socket.stat.gr_name | default('unknown') }}"
-          - "Docker socket mode: {{ docker_socket.stat.mode | default('unknown') }}"
+  # --------------------------------------------------
 
-    # --------------------------------------------------
-    # 15. Verify ubuntu is in docker group
-    # --------------------------------------------------
-    - name: Check ubuntu docker group membership
-      command: id ubuntu
-      register: ubuntu_id
-      changed_when: false
+  # 12. Apply Docker restart immediately if required
 
-    - name: Display ubuntu groups
-      debug:
-        var: ubuntu_id.stdout
+  # --------------------------------------------------
 
-    # --------------------------------------------------
-    # 16. Verify Docker daemon as ubuntu
-    # --------------------------------------------------
-    - name: Verify Docker daemon for ubuntu
-      become_user: ubuntu
-      shell: |
-        exec sg docker -c "docker info"
-      args:
-        executable: /bin/bash
-      changed_when: false
+  * name: Flush Docker handlers
+    meta: flush_handlers
 
-    # --------------------------------------------------
-    # 17. Verify Docker version
-    # --------------------------------------------------
-    - name: Verify Docker version
-      command: docker --version
-      changed_when: false
+  # --------------------------------------------------
 
-    # --------------------------------------------------
-    # 18. Verify Docker Compose
-    # --------------------------------------------------
-    - name: Verify Docker Compose
-      become_user: ubuntu
-      shell: |
-        exec sg docker -c "docker compose version"
-      args:
-        executable: /bin/bash
-      changed_when: false
+  # 13. Reset Ansible SSH connection
+
+  # --------------------------------------------------
+
+  # This refreshes group membership for Ansible's
+
+  # subsequent commands.
+
+  # --------------------------------------------------
+
+  * name: Reset SSH connection
+    meta: reset_connection
+
+  # --------------------------------------------------
+
+  # 14. Wait for Docker socket
+
+  # --------------------------------------------------
+
+  * name: Wait for Docker socket
+    wait_for:
+    path: /var/run/docker.sock
+    timeout: 30
+
+  # --------------------------------------------------
+
+  # 15. Check Docker socket permissions
+
+  # --------------------------------------------------
+
+  * name: Check Docker socket
+    stat:
+    path: /var/run/docker.sock
+    register: docker_socket
+
+  * name: Display Docker socket information
+    debug:
+    msg:
+
+    * "Docker socket exists: {{ docker_socket.stat.exists }}"
+    * "Docker socket group: {{ docker_socket.stat.gr_name | default('unknown') }}"
+    * "Docker socket mode: {{ docker_socket.stat.mode | default('unknown') }}"
+
+  # --------------------------------------------------
+
+  # 16. Verify Docker as ubuntu user
+
+  # --------------------------------------------------
+
+  * name: Verify Docker daemon for ubuntu
+    become_user: ubuntu
+    shell: sg docker -c "docker info"
+    args:
+    executable: /bin/bash
+    changed_when: false
+
+  # --------------------------------------------------
+
+  # 17. Verify Docker version
+
+  # --------------------------------------------------
+
+  * name: Verify Docker version
+    command: docker --version
+    changed_when: false
+
+  # --------------------------------------------------
+
+  # 18. Verify Docker Compose
+
+  # --------------------------------------------------
+
+  * name: Verify Docker Compose
+    become_user: ubuntu
+    shell: sg docker -c "docker compose version"
+    args:
+    executable: /bin/bash
+    changed_when: false
