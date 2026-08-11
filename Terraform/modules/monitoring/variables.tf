@@ -27,3 +27,8 @@ variable "chart_version" {
   default = "69.5.2"
 
 }
+
+variable "slack_webhook_url" {
+  type      = string
+  sensitive = true
+}

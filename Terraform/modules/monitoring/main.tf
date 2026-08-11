@@ -6,6 +6,19 @@ resource "kubernetes_namespace" "monitoring" {
 
 }
 
+resource "kubernetes_secret" "slack_webhook" {
+  metadata {
+    name      = "slack-webhook"
+    namespace = "monitoring"
+  }
+
+  type = "Opaque"
+
+  data = {
+    url = var.slack_webhook_url
+  }
+}
+
 resource "helm_release" "kube_prometheus_stack" {
   name             = "kube-prometheus-stack"
   namespace        = "monitoring"
@@ -55,5 +68,55 @@ resource "helm_release" "kube_prometheus_stack" {
 
       cleanupCustomResource = true
     })
+  ]
+}
+
+resource "kubernetes_manifest" "alertmanager_slack" {
+  manifest = {
+    apiVersion = "monitoring.coreos.com/v1alpha1"
+    kind       = "AlertmanagerConfig"
+
+    metadata = {
+      name      = "slack-alerts"
+      namespace = var.namespace
+    }
+
+    spec = {
+      route = {
+        receiver = "slack"
+      }
+
+      receivers = [
+        {
+          name = "slack"
+
+          slackConfigs = [
+            {
+              apiURL = {
+                name = kubernetes_secret.slack_webhook.metadata[0].name
+                key  = "url"
+              }
+
+              channel      = "#alerts"
+              sendResolved = true
+
+              title = "🚨 Kubernetes Alert"
+
+              text = <<-EOT
+                Alert: {{ .CommonLabels.alertname }}
+                Status: {{ .Status }}
+                Summary: {{ .CommonAnnotations.summary }}
+                Description: {{ .CommonAnnotations.description }}
+              EOT
+            }
+          ]
+        }
+      ]
+    }
+  }
+
+  depends_on = [
+    helm_release.kube_prometheus_stack,
+    kubernetes_secret.slack_webhook
   ]
 }

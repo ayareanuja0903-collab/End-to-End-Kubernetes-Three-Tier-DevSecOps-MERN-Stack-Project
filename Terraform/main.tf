@@ -185,6 +185,7 @@ module "monitoring" {
 
   cluster_name = module.eks.cluster_name
   namespace    = "monitoring"
+  slack_webhook_url = var.slack_webhook_url
 
   depends_on = [
     module.alb_controller,
