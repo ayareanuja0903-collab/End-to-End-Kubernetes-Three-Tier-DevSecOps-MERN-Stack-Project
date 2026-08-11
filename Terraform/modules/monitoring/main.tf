@@ -103,10 +103,21 @@ resource "kubernetes_manifest" "alertmanager_slack" {
               title = "🚨 Kubernetes Alert"
 
               text = <<-EOT
-                Alert: {{ .CommonLabels.alertname }}
-                Status: {{ .Status }}
-                Summary: {{ .CommonAnnotations.summary }}
-                Description: {{ .CommonAnnotations.description }}
+                {{ range .Alerts.Firing }}
+                *Alert:* {{ .Labels.alertname }}
+                *Status:* FIRING
+                *Severity:* {{ .Labels.severity }}
+                *Summary:* {{ .Annotations.summary }}
+                *Description:* {{ .Annotations.description }}
+                {{ end }}
+
+                {{ range .Alerts.Resolved }}
+                *Alert:* {{ .Labels.alertname }}
+                *Status:* RESOLVED
+                *Severity:* {{ .Labels.severity }}
+                *Summary:* {{ .Annotations.summary }}
+                *Description:* {{ .Annotations.description }}
+                {{ end }}
               EOT
             }
           ]
