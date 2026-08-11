@@ -344,7 +344,7 @@ pipeline {
 
         unstable {
             slackSend(
-                channel: '#devops-jenkins',
+                channel: '#three-tier-app',
                 color: 'warning',
                 message: "⚠️ Frontend Pipeline UNSTABLE\nBuild: #${env.BUILD_NUMBER}"
             )
