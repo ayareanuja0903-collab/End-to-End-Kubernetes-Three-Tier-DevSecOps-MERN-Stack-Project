@@ -319,15 +319,16 @@ pipeline {
     
    post {
 
-    always {
-        cleanWs()
-    }
+        always {
+            cleanWs()
+        }
 
-    success {
-        echo 'Frontend Pipeline Completed Successfully'
-    }
+        success {
+            echo 'Frontend Pipeline Completed Successfully'
+        }
 
-    failure {
-        echo 'Frontend Pipeline Failed'
+        failure {
+            echo 'Frontend Pipeline Failed'
+        }
     }
 }
