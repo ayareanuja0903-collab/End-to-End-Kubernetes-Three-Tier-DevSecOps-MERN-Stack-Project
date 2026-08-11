@@ -134,15 +134,28 @@
 
 
     # -------------------------
-    # Expose SonarQube
+    # Keep SonarQube internal
     # -------------------------
 
-    - name: Expose SonarQube Service
+    - name: Ensure SonarQube Service is ClusterIP
       command: >
         kubectl patch svc sonarqube-sonarqube
         -n sonarqube
-        -p '{"spec":{"type":"LoadBalancer"}}'
-      failed_when: false
+        -p '{"spec":{"type":"ClusterIP"}}'
+      changed_when: false
+
+    - name: Verify SonarQube Service is ClusterIP
+      command: >
+        kubectl get svc sonarqube-sonarqube
+        -n sonarqube
+        -o jsonpath='{.spec.type}'
+      register: sonarqube_service_type
+      changed_when: false
+
+    - name: Fail if SonarQube is not ClusterIP
+      fail:
+        msg: "SonarQube Service must be ClusterIP, but is {{ sonarqube_service_type.stdout }}"
+      when: sonarqube_service_type.stdout != "ClusterIP"
 
 
     # -------------------------
