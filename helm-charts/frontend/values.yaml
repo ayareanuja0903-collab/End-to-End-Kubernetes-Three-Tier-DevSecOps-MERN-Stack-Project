@@ -1,8 +1,8 @@
 replicaCount: 2
 
 image:
-  repository: 023465168943.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-frontend
-  tag: "20"
+  repository: 585142510577.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-frontend
+  tag: "latest"
   pullPolicy: Always
 
 

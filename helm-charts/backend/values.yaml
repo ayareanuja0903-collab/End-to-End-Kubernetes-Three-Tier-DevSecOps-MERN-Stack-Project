@@ -1,7 +1,7 @@
 replicaCount: 2
 
 image:
-  repository: 023465168943.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-backend
+  repository: 585142510577.dkr.ecr.ap-south-1.amazonaws.com/three-tier-dev-backend
   tag: latest
   pullPolicy: Always
 
